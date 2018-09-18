@@ -1,0 +1,20 @@
+{
+    "compilerOptions": {
+        "lib": ["es2017", "dom"],
+        "skipLibCheck": true,
+        "outDir": "./dist/",
+        "sourceMap": true,
+        "noImplicitAny": false,
+        "target": "es6",
+        "baseUrl": "./source/js",
+        "module": "commonjs",
+        "jsx": "react",
+        "paths": {
+            "@shared/*": ["../../../shared/@shared/*"],
+            "@env/*": ["../../../shared/@env/*"]
+        }
+    },
+    "include": [
+        "./source/**/*"
+    ]
+}

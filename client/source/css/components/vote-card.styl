@@ -1,0 +1,48 @@
+.c-vote-card
+  display flex
+  flex-direction row
+  align-items center
+  justify-content left
+  flex-grow 1
+  cursor move
+
+  &__padded
+    padding 8px
+    flex-grow 1
+    display flex
+    flex-direction row
+    align-items center
+    justify-content left
+
+  &__index
+    color #666
+
+  &__details
+    flex-grow 1
+    padding 0 12px 0 4px
+
+  &__dash
+    display inline-block
+    margin 0 3px
+    font-size 10px
+    color #999
+
+  &__author
+    color #999
+    font-size 12px
+
+  .i-star
+    cursor pointer
+
+    &:hover polygon
+      fill #ffeb3b
+
+  &__image-media
+    background-size contain
+    width 36px
+    background-position left
+    height 50px
+
+    &.no-src
+      background-size 90%
+      background-position-x 50%

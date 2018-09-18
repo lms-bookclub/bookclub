@@ -1,0 +1,10 @@
+- node_modules
+- .git
+- .idea
+- .DS_STORE
+- *.iml
++ client/dist/
+- client/*
++ */
++ server/
++ shared/

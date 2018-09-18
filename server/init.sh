@@ -1,0 +1,2 @@
+./link.sh
+npm i

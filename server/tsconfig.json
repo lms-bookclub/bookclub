@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+        "sourceMap": true,
+        "noImplicitAny": false,
+        "esModuleInterop": true,
+        "target": "es6",
+        "module": "commonjs",
+        "outDir": "./dist/",
+        "baseUrl": "./source",
+        "moduleResolution": "node",
+        "paths": {
+            "@shared/*": ["../../shared/@shared/*"],
+            "@env/*": ["../../shared/@env/*"]
+        }
+    },
+    "include": [
+        "./source/**/*"
+    ]
+}
