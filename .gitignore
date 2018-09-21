@@ -1,0 +1,17 @@
+.idea/
+*.iml
+.c9/
+.DS_STORE
+deploy.sh
+node_modules/
+logs/
+dist/
+client/gulp/@env/
+server/source/@shared
+server/source/@env
+shared/@env/*.js
+shared/@env/*.ts
+shared/**/*.js
+shared/**/*.js.map
+deploy.sh
+forever.sh

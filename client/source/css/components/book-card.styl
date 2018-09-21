@@ -1,0 +1,85 @@
+.c-book-card
+  min-width 240px
+  max-width 400px
+  position relative
+  margin 20px
+  display flex
+  flex-direction row
+
+  &__title
+    display block
+    font-weight 600
+
+  &__author
+    display block
+    font-style italic
+    font-size 12px
+
+  &__detail
+    display block
+    margin-bottom .5em
+    font-size 12px
+
+    &:last-child
+      margin-bottom 0
+
+    label
+      font-weight 600
+
+    &--goodreads
+      a
+        max-width 130px
+        text-overflow ellipsis
+        display inline-block
+        overflow hidden
+        line-height 1
+        height 1.1em
+        vertical-align top
+
+  &__status
+    position absolute
+    right 5px
+    bottom 5px
+    padding 3px 6px
+    border-radius 3px
+    background #eee
+    font-size 12px
+
+  &__edit-icon
+    margin-left auto
+
+  &__image-container
+    min-width 136px
+    width 136px
+    height 136px
+    display flex
+    box-sizing border-box
+    align-items center
+    justify-content center
+
+    &--src
+      flex-grow 1
+
+    &--no-src
+
+      .c-book-card__image
+        width calc(100% - 40px)
+        height calc(100% - 40px)
+
+  &__image
+    width 100%
+    height 100%
+
+  &__image-media
+    background-size cover
+    width 110px
+    min-width 110px
+    background-position center
+
+    &.no-src
+      background-size 90%
+      background-position-x 50%
+
+  &__details
+    flex-grow 1
+    margin-left -5px

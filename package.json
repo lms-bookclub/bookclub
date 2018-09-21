@@ -1,0 +1,19 @@
+{
+    "name": "bookclub",
+    "version": "1.0.0",
+    "description": "Bookclub application",
+    "homepage": "https://github.com/lms-bookclub/bookclub",
+    "bugs": "https://github.com/lms-bookclub/bookclub/issues",
+    "license": "MIT",
+    "author": {
+        "name" : "Matthew Balmer",
+        "url" : "http://mattbalmer.com"
+    },
+    "repository": {
+        "type" : "git",
+        "url" : "https://github.com/lms-bookclub/bookclub.git"
+    },
+    "scripts": {
+        "postinstall": "./init.sh"
+    }
+}
