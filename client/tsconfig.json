@@ -11,7 +11,8 @@
         "jsx": "react",
         "paths": {
             "@shared/*": ["../../../shared/@shared/*"],
-            "@env/*": ["../../../shared/@env/*"]
+            "@env/*": ["../../../shared/@env/*"],
+            "@client/*": ["*"]
         }
     },
     "include": [

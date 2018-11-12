@@ -33,6 +33,7 @@ class HeaderContainer_ extends React.Component<any, any> {
         <ul className='c-header__nav-tabs'>
           <NavTab to='/'>Voting</NavTab>
           <NavTab to='/books'>Books</NavTab>
+          <NavTab to='/seasons'>Seasons</NavTab>
         </ul>
         <div>
           {me

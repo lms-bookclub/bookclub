@@ -5,32 +5,32 @@ import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import { withRouter } from 'react-router';
 import DialogContentText from '@material-ui/core/DialogContentText';
-import { VotingSessionStatus } from 'types';
+import { toStandardString } from '@client/utils/dates';
 import { SeasonActions } from 'actions/SeasonActions';
+import { BookActions } from 'actions/BookActions';
 import { ConfirmDialogButton } from 'components/display/ConfirmDialogButton';
-import { VotingSessionContainer } from 'components/hybrid/VotingSessionComponent';
 import { SeasonInfo } from 'components/display/SeasonInfo';
+import { VotingSessionActions } from '@client/actions/VotingSessionActions';
 
-class CurrentPage_ extends React.Component<any, any> {
+class SeasonsPage_ extends React.Component<any, any> {
   openSeasonDialog: ConfirmDialogButton;
 
   render() {
     const {
-      votingSession,
-      currentSeason,
-      previousSeason,
+      seasons,
       isLoggedIn,
       isAdmin,
     } = this.props;
 
-    const displaySeason = currentSeason || previousSeason;
-    const isVotingOpen = votingSession.status === VotingSessionStatus.OPEN;
+    const seasonList = Object.keys(seasons).map(id => seasons[id]).sort((a, b) => {
+      return new Date(b.dates.finished || Date.now()).getTime() - new Date(a.dates.finished || Date.now()).getTime();
+    });
 
     return (
       <div className='l-current-page'>
         {isLoggedIn && isAdmin ?
           <div>
-            {!currentSeason ?
+            {!true ?
               <ConfirmDialogButton
                 title='Open new season?'
                 content={
@@ -42,24 +42,43 @@ class CurrentPage_ extends React.Component<any, any> {
               >
                 Open New Season
               </ConfirmDialogButton>
-            : null}
+              : null}
           </div>
-        : null}
-        {displaySeason ?
-          <SeasonInfo
-            books={this.props.books}
-            title={currentSeason ? 'Current Season' : 'Previous Season'}
-            season={displaySeason}
+          : null}
+        {seasonList.map((season, i) => {
+          if (season.book && typeof season.book === 'string') {
+            season.book = this.props.books[season.book._id || season.book] || season.book;
+          }
+
+          const title = season.book && season.book.title
+            ? season.book.title
+            : season.dates.finished
+              ? toStandardString(season.dates.finished)
+              : 'Current Season';
+
+          const votingSession = this.props.votingSessions[season.votingSession] || {};
+
+          const books = votingSession.booksVotedOn && votingSession.booksVotedOn.length > 0
+            ? votingSession.booksVotedOn.reduce((books, bookId) => {
+              return {
+                ...books,
+                [bookId]: this.props.books[bookId],
+              }
+            }, {})
+            : this.props.books;
+
+          return <SeasonInfo
+            key={i}
+            books={books}
+            title={title}
+            season={season}
             votingSession={votingSession}
             onSeasonClose={this.props.closeCurrentSeason.bind(this)}
             allowJsonViewing={isLoggedIn && isAdmin}
-            allowClosing={isLoggedIn && isAdmin && currentSeason && !isVotingOpen}
-            startVotingOpen={true}
+            allowClosing={false}
+            startVotingOpen={false}
           />
-        : null}
-        {isLoggedIn && currentSeason && isVotingOpen ?
-          <VotingSessionContainer />
-        : null}
+        })}
       </div>
     );
   }
@@ -73,11 +92,13 @@ const mapStateToProps = (state: any) => {
   return {
     isLoggedIn: state.users.isLoggedIn,
     isAdmin: state.users.isAdmin,
+    seasons: state.seasons.seasons,
+    votingSessions: state.votingSession.sessions || {},
     previousSeason: state.seasons.seasons[state.seasons.previousId],
     currentSeason: state.seasons.seasons[state.seasons.currentId],
     votingSession: state.votingSession.currentId ? state.votingSession.sessions[state.votingSession.currentId]
       : state.votingSession.latestId ? state.votingSession.sessions[state.votingSession.latestId]
-        : {},
+      : {},
     books: state.books || {},
   }
 };
@@ -85,7 +106,9 @@ const mapStateToProps = (state: any) => {
 const mapDispatchToProps = (dispatch: any) => {
   return {
     componentDidMount() {
-      dispatch(SeasonActions.fetchCurrent());
+      dispatch(BookActions.fetchBookList());
+      dispatch(VotingSessionActions.fetchAll());
+      dispatch(SeasonActions.fetchSeasonList());
     },
 
     closeCurrentSeason() {
@@ -98,7 +121,7 @@ const mapDispatchToProps = (dispatch: any) => {
   }
 };
 
-export const CurrentPage = withRouter(connect(
+export const SeasonsPage = withRouter(connect(
   mapStateToProps,
   mapDispatchToProps,
-)(CurrentPage_));
+)(SeasonsPage_));

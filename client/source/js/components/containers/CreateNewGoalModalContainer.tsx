@@ -82,7 +82,7 @@ export class CreateNewGoalModalContainer_ extends React.Component<any, any> {
 const mapStateToProps = (state: any) => {
   return {
     isAdmin: state.users.isAdmin,
-    currentSeason: state.seasons[state.seasons.currentId] || {},
+    currentSeason: state.seasons.seasons[state.seasons.currentId] || {},
   }
 };
 

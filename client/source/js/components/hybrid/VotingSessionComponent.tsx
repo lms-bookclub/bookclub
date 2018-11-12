@@ -170,8 +170,7 @@ class VotingSessionContainer_ extends React.Component<any, any> {
     let books = this.state.books.slice(0);
     let i = Config.MAX_VOTES - points;
     books = books.filter(_ => _._id != book._id);
-    const replacedBook = books.splice(i, 1, book)[0];
-    books.splice(Config.MAX_VOTES, 0, replacedBook);
+    books.splice(i, 0, book);
 
     this.setState({
       books,
@@ -187,7 +186,7 @@ const mapStateToProps = (state: any) => {
     myId: state.users.myId,
     users: state.users.users || {},
     books: state.books || {},
-    votingSession: state.votingSession.current || {},
+    votingSession: state.votingSession.currentId ? state.votingSession.sessions[state.votingSession.currentId] : {},
   }
 };
 

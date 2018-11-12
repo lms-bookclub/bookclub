@@ -19,7 +19,7 @@ function pointsForBookFromVoting(book, votingSession) {
   return vote ? vote.points : 0;
 }
 
-function voteResultsList(books = {}, results = []) {
+function voteResultsList(books = {}, results = [], seasonBook = {}) {
   const winner = results[0];
   const list = Object.keys(books)
     .map(bookId => {
@@ -30,7 +30,7 @@ function voteResultsList(books = {}, results = []) {
       book.points = result ? result.points : 0;
       return book;
     })
-    .filter(_ => _._id !== winner.book && _.status === BookStatus.SUGGESTED)
+    .filter(_ => _._id !== winner.book && _.status !== BookStatus.BACKLOG && _._id)
     .sort((a, b) => b.points - a.points);
   return list;
 }
@@ -50,6 +50,14 @@ export interface SeasonInfoProps {
   allowClosing: boolean;
   title: string;
   books?: any;
+  startVotingOpen?: boolean;
+}
+
+export interface SeasonInfoState {
+  anchorEl: HTMLElement;
+  closeSeasonDialogOpen: boolean;
+  showJson: boolean;
+  showVotingResults: boolean;
 }
 
 function ensure(props: SeasonInfoProps): SeasonInfoProps {
@@ -65,41 +73,46 @@ function ensure(props: SeasonInfoProps): SeasonInfoProps {
       ...props.votingSession,
       status: null,
     },
+    startVotingOpen: props.hasOwnProperty('startVotingOpen') ? props.startVotingOpen : true,
     ...props,
   }
 }
 
-export class SeasonInfo extends React.Component<SeasonInfoProps, any> {
+export class SeasonInfo extends React.Component<SeasonInfoProps, SeasonInfoState> {
   closeSeasonDialog: ConfirmDialog;
-
-  state = {
-    anchorEl: null,
-    closeSeasonDialogOpen: false,
-    showJson: false,
-  };
 
   constructor(props) {
     super(props);
+
+    this.state = {
+      anchorEl: null,
+      closeSeasonDialogOpen: false,
+      showJson: false,
+      showVotingResults: props.startVotingOpen,
+    };
 
     this.handleMenuClose = this.handleMenuClose.bind(this);
     this.handleMenuOpen = this.handleMenuOpen.bind(this);
     this.handleCloseSeasonClick = this.handleCloseSeasonClick.bind(this);
     this.handleCloseSeasonConfirm = this.handleCloseSeasonConfirm.bind(this);
     this.handleDialogClose = this.handleDialogClose.bind(this);
+    this.handleToggleVotingResultsClick = this.handleToggleVotingResultsClick.bind(this);
     this.showJson = this.showJson.bind(this);
     this.hideJson = this.hideJson.bind(this);
   }
 
   render() {
     const { season, votingSession, allowClosing, allowJsonViewing, title } = ensure(this.props);
-    const { anchorEl, showJson } = this.state;
+    const { anchorEl, showJson, showVotingResults } = this.state;
 
-    const showMenu = allowJsonViewing || allowClosing;
+    const isVotingSessionClosed = votingSession.status === VotingSessionStatus.COMPLETE;
+    const allowToggleVotingResults = isVotingSessionClosed;
+    const showMenu = allowJsonViewing || allowClosing || allowToggleVotingResults;
 
     return (
       <div>
         <Paper className='c-season-info' elevation={1}>
-          <div className='o-action-title'>
+          <div className='c-season-info__header o-action-title'>
             <Typography variant='headline' component='h3'>
               {title}
             </Typography>
@@ -119,6 +132,7 @@ export class SeasonInfo extends React.Component<SeasonInfoProps, any> {
                   open={!!anchorEl}
                   onClose={this.handleMenuClose}
                 >
+                  {allowToggleVotingResults ? <MenuItem onClick={this.handleToggleVotingResultsClick}>{showVotingResults ? 'Hide Voting Results' : 'Show Voting Results'}</MenuItem> : null}
                   {allowClosing ? <MenuItem onClick={this.handleCloseSeasonClick}>Close Season</MenuItem> : null}
                   {allowJsonViewing ? <MenuItem onClick={showJson ? this.hideJson : this.showJson}>{showJson ? 'Hide Json' : 'Show JSON'}</MenuItem> : null}
                 </Menu>
@@ -137,38 +151,45 @@ export class SeasonInfo extends React.Component<SeasonInfoProps, any> {
             onConfirm={this.handleCloseSeasonConfirm}
             onCancel={this.handleDialogClose}
           />
-          {season.dates.created ?
-            renderDate('Started', season.dates.created)
-          : null}
-          {season.dates.started ?
-            renderDate('Book Chosen', season.dates.started)
-          : null}
-          {season.dates.finished ?
-            renderDate('Finished', season.dates.finished)
-          : null}
+          <div className='c-season-info__details'>
+            {season.dates.created ?
+              renderDate('Started', season.dates.created)
+              : null}
+            {season.dates.started ?
+              renderDate('Book Chosen', season.dates.started)
+              : null}
+            {season.dates.finished ?
+              renderDate('Finished', season.dates.finished)
+              : null}
+          </div>
           {showJson ?
-            <div className='o-json-dump'>
-              <span>Season JSON</span>
-              <pre>{toJSON(season)}</pre>
+            <div className='c-season-info__admin-info'>
+              <div className='o-json-dump'>
+                <span>Season JSON</span>
+                <pre>{toJSON(season)}</pre>
+              </div>
             </div>
           : null}
-        </Paper>
-        {season.book ?
-          <BookCard
-            book={season.book}
-            points={pointsForBookFromVoting(season.book, votingSession)}
-          />
-        : null}
-        {votingSession.status === VotingSessionStatus.COMPLETE ?
-          <div className='c-season-info__voting-results'>
-            {voteResultsList(this.props.books, votingSession.results).map((book, i) =>
-              <VoteResultCard
-                key={i}
-                book={book}
+          {season.book ?
+            <div className='c-season-info__book'>
+              <BookCard
+                book={season.book}
+                points={showVotingResults ? pointsForBookFromVoting(season.book, votingSession) : undefined}
+                borderless={true}
               />
-            )}
-          </div>
-        : null}
+            </div>
+            : null}
+          {showVotingResults && isVotingSessionClosed ?
+            <div className='c-season-info__voting-results'>
+              {voteResultsList(this.props.books, votingSession.results, season.book).map((book, i) =>
+                <VoteResultCard
+                  key={i}
+                  book={book}
+                />
+              )}
+            </div>
+            : null}
+        </Paper>
       </div>
     );
   }
@@ -190,6 +211,13 @@ export class SeasonInfo extends React.Component<SeasonInfoProps, any> {
   handleCloseSeasonClick() {
     this.setState({
       closeSeasonDialogOpen: true,
+      anchorEl: null,
+    });
+  }
+
+  handleToggleVotingResultsClick() {
+    this.setState({
+      showVotingResults: !this.state.showVotingResults,
       anchorEl: null,
     });
   }

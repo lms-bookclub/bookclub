@@ -28,6 +28,7 @@ module.exports = {
     alias: {
       "@shared": path.resolve(__dirname, "../shared/@shared/"),
       "@env": path.resolve(__dirname, "../shared/@env/"),
+      "@client": path.resolve(__dirname, "source/js"),
     },
     // plugins: [
     //     new TsConfigPathsPlugin(/* { tsconfig, compiler } */)

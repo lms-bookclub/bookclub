@@ -2,6 +2,8 @@ import VotingSessionClient from 'clients/VotingSessionClient';
 
 export const PREFIX = `@VotingSession`;
 export const VotingSessionActionTypes = {
+  ASK_ALL: `${PREFIX}:ASK_ALL`,
+  GOT_ALL: `${PREFIX}:GOT_ALL`,
   ASK_CURRENT: `${PREFIX}:ASK_CURRENT`,
   GOT_CURRENT: `${PREFIX}:GOT_CURRENT`,
   ASK_LATEST: `${PREFIX}:ASK_LATEST`,
@@ -15,6 +17,22 @@ export const VotingSessionActionTypes = {
 };
 
 export const VotingSessionActions = {
+  requestAll_: () => ({
+    type: VotingSessionActionTypes.ASK_ALL,
+  }),
+  receiveAll_: (votingSessions) => ({
+    type: VotingSessionActionTypes.GOT_ALL,
+    votingSessions,
+    receivedAt: Date.now(),
+  }),
+  fetchAll: () => (dispatch) => {
+    dispatch(VotingSessionActions.requestAll_());
+    VotingSessionClient.fetchAll()
+      .then(votingSessions => {
+        dispatch(VotingSessionActions.receiveAll_(votingSessions));
+      });
+  },
+
   requestCurrent_: () => ({
     type: VotingSessionActionTypes.ASK_CURRENT,
   }),

@@ -123,9 +123,11 @@ routes.post('/close-current-voting-session',
     try {
       const openVotingSession = await VotingSessionModel.getCurrentSession();
       const currentSeason = await SeasonModel.getOpenSeason();
+      const allBooks = await BookModel.find({});
 
       const updateVotingSessionTransaction = await VotingSessionModel.updateOne({ _id: openVotingSession._id }, {
         $set: { 'dates.finished': now },
+        booksVotedOn: allBooks.filter(_ => _.status === 'SUGGESTED').map(book => book._id),
       });
 
       const updateSeasonTransaction = await SeasonModel.updateOne({ _id: currentSeason._id }, {
