@@ -4,17 +4,14 @@ import { syncHistoryWithStore } from 'react-router-redux';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import { withRouter } from 'react-router';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import { toStandardString } from '@client/utils/dates';
+import { timeOf, toStandardString } from '@client/utils/dates';
 import { SeasonActions } from 'actions/SeasonActions';
 import { BookActions } from 'actions/BookActions';
-import { ConfirmDialogButton } from 'components/display/ConfirmDialogButton';
 import { SeasonInfo } from 'components/display/SeasonInfo';
 import { VotingSessionActions } from '@client/actions/VotingSessionActions';
+import { SeasonStatus } from '@shared/types';
 
 class SeasonsPage_ extends React.Component<any, any> {
-  openSeasonDialog: ConfirmDialogButton;
-
   render() {
     const {
       seasons,
@@ -22,29 +19,13 @@ class SeasonsPage_ extends React.Component<any, any> {
       isAdmin,
     } = this.props;
 
-    const seasonList = Object.keys(seasons).map(id => seasons[id]).sort((a, b) => {
-      return new Date(b.dates.finished || Date.now()).getTime() - new Date(a.dates.finished || Date.now()).getTime();
-    });
+    const seasonList = Object.keys(seasons)
+      .map(id => seasons[id])
+      .filter(season => season.status === SeasonStatus.COMPLETE)
+      .sort((a, b) => timeOf(b.dates.finished) - timeOf(a.dates.finished));
 
     return (
       <div className='l-current-page'>
-        {isLoggedIn && isAdmin ?
-          <div>
-            {!true ?
-              <ConfirmDialogButton
-                title='Open new season?'
-                content={
-                  <DialogContentText>This will start a brand new season, and start a voting session for a new book.</DialogContentText>
-                }
-                confirmText='Open Season'
-                onRef={(ref) => (this.openSeasonDialog = ref)}
-                onConfirm={this.props.openNewSeason.bind(this)}
-              >
-                Open New Season
-              </ConfirmDialogButton>
-              : null}
-          </div>
-          : null}
         {seasonList.map((season, i) => {
           if (season.book && typeof season.book === 'string') {
             season.book = this.props.books[season.book._id || season.book] || season.book;
@@ -94,7 +75,6 @@ const mapStateToProps = (state: any) => {
     isAdmin: state.users.isAdmin,
     seasons: state.seasons.seasons,
     votingSessions: state.votingSession.sessions || {},
-    previousSeason: state.seasons.seasons[state.seasons.previousId],
     currentSeason: state.seasons.seasons[state.seasons.currentId],
     votingSession: state.votingSession.currentId ? state.votingSession.sessions[state.votingSession.currentId]
       : state.votingSession.latestId ? state.votingSession.sessions[state.votingSession.latestId]

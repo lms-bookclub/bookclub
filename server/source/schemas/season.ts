@@ -1,4 +1,5 @@
 import mongoose from 'lib/mongoose';
+import { VotingSessionSchema } from './voting-session';
 
 const GoalSchema = new mongoose.Schema({
   chapter: {
@@ -51,6 +52,22 @@ const SeasonSchema = new mongoose.Schema({
       type: Date,
     },
   },
+}, {
+  id: false,
+  toObject: {
+    virtuals: true
+  },
+  toJSON: {
+    virtuals: true,
+  }
+});
+
+SeasonSchema.virtual('status').get(function() {
+  return this.dates.finished
+    ? 'COMPLETE'
+    : this.dates.started
+      ? 'STARTED'
+      : 'PREPARED';
 });
 
 SeasonSchema.statics.getOpenSeason = function() {

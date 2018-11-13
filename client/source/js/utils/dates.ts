@@ -12,3 +12,11 @@ export function toStandardString(timestamp: string): string {
     day: 'numeric',
   });
 }
+
+/**
+ * Get the time in milliseconds of a given timestamp. Uses Date.now() if not found.
+ * @param {string} timestamp
+ */
+export function timeOf(timestamp?: string): number {
+  return new Date(timestamp || Date.now()).getTime()
+}

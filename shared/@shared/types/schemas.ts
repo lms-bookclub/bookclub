@@ -14,6 +14,12 @@ export type VotingSession = {
   booksVotedOn: (string|Book)[];
 }
 
+export enum SeasonStatus {
+  PREPARED = 'PREPARED',
+  STARTED = 'STARTED',
+  COMPLETE = 'COMPLETE',
+}
+
 export enum VotingSessionStatus {
   PREPARED = 'PREPARED',
   OPEN = 'OPEN',
