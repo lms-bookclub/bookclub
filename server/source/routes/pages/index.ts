@@ -7,7 +7,7 @@ const routes = express.Router();
   '/',
   '/books',
   '/voting',
-  '/season',
+  '/seasons',
   '/current',
 ].forEach(route => {
   routes.get(route, (req, res) => {

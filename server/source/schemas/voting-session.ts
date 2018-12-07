@@ -63,6 +63,11 @@ function calculateResults(votes: { user: string, book: string, points: number }[
 }
 
 const VotingSessionSchema = new mongoose.Schema({
+  booksVotedOn: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Book',
+  }],
+
   votes: [{
     user: {
       type: mongoose.Schema.Types.ObjectId,

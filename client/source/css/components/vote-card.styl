@@ -6,6 +6,9 @@
   flex-grow 1
   cursor move
 
+  &--result
+    box-shadow none
+
   &__padded
     padding 8px
     flex-grow 1
@@ -46,3 +49,10 @@
     &.no-src
       background-size 90%
       background-position-x 50%
+
+  &__point-dropdown
+    &:before, &:after
+      display none
+
+  &__points
+    white-space nowrap

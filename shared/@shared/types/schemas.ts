@@ -10,7 +10,14 @@ export type VotingSession = {
   results: {
     book: string,
     points: string|number,
-  }[]
+  }[];
+  booksVotedOn: (string|Book)[];
+}
+
+export enum SeasonStatus {
+  PREPARED = 'PREPARED',
+  STARTED = 'STARTED',
+  COMPLETE = 'COMPLETE',
 }
 
 export enum VotingSessionStatus {

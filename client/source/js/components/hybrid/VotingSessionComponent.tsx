@@ -65,12 +65,12 @@ class VotingSessionContainer_ extends React.Component<any, any> {
 
     this.state = {
       books: extractBookList(props),
-      dirty: false,
+      enabled: true,
     };
   }
 
   render() {
-    const { books, dirty } = this.state;
+    const { books, enabled } = this.state;
     const { votingSession, users, isAdmin } = this.props;
     const booksMap = this.props.books;
     const isOpen = this.props.votingSession.status === VotingSessionStatus.OPEN;
@@ -114,12 +114,12 @@ class VotingSessionContainer_ extends React.Component<any, any> {
             : null}
           </div>
         : null}
-        <div className='o-action-row'>
+        <div className='o-action-row c-voting-session__actions'>
           {isOpen ?
             <Button
               className='o-action'
               onClick={this.props.castVotes.bind(this)}
-              disabled={!dirty}
+              disabled={!enabled}
             >
               {hasVoted ? 'Update Vote': 'Cast Vote'}
             </Button>
@@ -156,7 +156,7 @@ class VotingSessionContainer_ extends React.Component<any, any> {
     const books = list.map(item => this.props.books[item.key]);
     this.setState({
       books,
-      dirty: true,
+      enabled: true,
     });
   }
 
@@ -170,12 +170,11 @@ class VotingSessionContainer_ extends React.Component<any, any> {
     let books = this.state.books.slice(0);
     let i = Config.MAX_VOTES - points;
     books = books.filter(_ => _._id != book._id);
-    const replacedBook = books.splice(i, 1, book)[0];
-    books.splice(Config.MAX_VOTES, 0, replacedBook);
+    books.splice(i, 0, book);
 
     this.setState({
       books,
-      dirty: true,
+      enabled: true,
     });
   }
 }
@@ -187,7 +186,7 @@ const mapStateToProps = (state: any) => {
     myId: state.users.myId,
     users: state.users.users || {},
     books: state.books || {},
-    votingSession: state.votingSession.current || {},
+    votingSession: state.votingSession.currentId ? state.votingSession.sessions[state.votingSession.currentId] : {},
   }
 };
 
@@ -201,7 +200,7 @@ const mapDispatchToProps = (dispatch: any) => {
       }));
       dispatch(ReduxActions.onNext(VotingSessionActionTypes.GOT_VOTES_CAST, () => {
         this.setState({
-          dirty: false,
+          enabled: false,
         })
       }));
       dispatch(VotingSessionActions.castVotes(votes));

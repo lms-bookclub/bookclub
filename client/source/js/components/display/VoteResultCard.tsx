@@ -13,7 +13,7 @@ export class VoteResultCard extends React.Component<VoteResultCardProps, any> {
     const { book } = this.props;
 
     return (
-      <Card className='c-vote-card'>
+      <Card className='c-vote-card c-vote-card--result'>
         <CardMedia
           className={`c-vote-card__image-media${!book.links.image ? ' no-src':''}`}
           image={book.links.image ? book.links.image : '/icons/icon-book-256.png'}

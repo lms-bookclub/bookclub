@@ -18,12 +18,11 @@ class CurrentPage_ extends React.Component<any, any> {
     const {
       votingSession,
       currentSeason,
-      previousSeason,
       isLoggedIn,
       isAdmin,
     } = this.props;
 
-    const displaySeason = currentSeason || previousSeason;
+    const isVotingOpen = votingSession.status === VotingSessionStatus.OPEN;
 
     return (
       <div className='l-current-page'>
@@ -44,18 +43,19 @@ class CurrentPage_ extends React.Component<any, any> {
             : null}
           </div>
         : null}
-        {displaySeason ?
+        {currentSeason ?
           <SeasonInfo
             books={this.props.books}
             title={currentSeason ? 'Current Season' : 'Previous Season'}
-            season={displaySeason}
+            season={currentSeason}
             votingSession={votingSession}
             onSeasonClose={this.props.closeCurrentSeason.bind(this)}
             allowJsonViewing={isLoggedIn && isAdmin}
-            allowClosing={isLoggedIn && isAdmin && currentSeason}
+            allowClosing={isLoggedIn && isAdmin && currentSeason && !isVotingOpen}
+            startVotingOpen={true}
           />
         : null}
-        {isLoggedIn && currentSeason && votingSession.status === VotingSessionStatus.OPEN ?
+        {isLoggedIn && currentSeason && isVotingOpen ?
           <VotingSessionContainer />
         : null}
       </div>
@@ -71,9 +71,10 @@ const mapStateToProps = (state: any) => {
   return {
     isLoggedIn: state.users.isLoggedIn,
     isAdmin: state.users.isAdmin,
-    previousSeason: state.seasons[state.seasons.previousId],
-    currentSeason: state.seasons[state.seasons.currentId],
-    votingSession: state.votingSession.current || state.votingSession.latest || {},
+    currentSeason: state.seasons.seasons[state.seasons.currentId],
+    votingSession: state.votingSession.currentId ? state.votingSession.sessions[state.votingSession.currentId]
+      : state.votingSession.latestId ? state.votingSession.sessions[state.votingSession.latestId]
+        : {},
     books: state.books || {},
   }
 };

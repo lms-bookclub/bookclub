@@ -7,7 +7,7 @@ import { syncHistoryWithStore } from 'react-router-redux';
 import { HomePage } from 'components/pages/HomePage';
 import { BooksPage } from 'components/pages/BooksPage';
 import { VotingPage } from 'components/pages/VotingPage';
-import { SeasonPage } from 'components/pages/SeasonPage';
+import { SeasonsPage } from 'components/pages/SeasonsPage';
 import { CurrentPage } from 'components/pages/CurrentPage';
 import { AppContainer } from 'components/containers/AppContainer';
 import { UserActions } from 'actions/UserActions';
@@ -24,7 +24,7 @@ const routes = (
           <Route exact path='/home' components={{ main: HomePage }} />
           <Route exact path='/books' components={{ main: BooksPage }} />
           <Route exact path='/voting' components={{ main: VotingPage }} />
-          <Route exact path='/season' components={{ main: SeasonPage }} />
+          <Route exact path='/seasons' components={{ main: SeasonsPage }} />
           <Route exact path='/current' components={{ main: CurrentPage }} />
         </div>
       </Route>

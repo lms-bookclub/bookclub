@@ -1,54 +1,97 @@
 import { VotingSessionActionTypes } from 'actions/VotingSessionActions';
-import { VotingSession, ReduxAction } from 'types';
+import { VotingSession, ReduxAction, Season } from 'types';
 import { SeasonActionTypes } from 'actions/SeasonActions';
 
 type VotingSessionState = {
-  current: VotingSession;
-  latest: VotingSession;
+  currentId: string;
+  latestId: string;
+  sessions: {
+    [key: string]: VotingSession;
+  };
 };
 
 const defaultState: VotingSessionState = {
-  current: null,
-  latest: null,
+  currentId: null,
+  latestId: null,
+  sessions: {},
 };
 
-export const VotingSessionReducer = (state: VotingSessionState = defaultState, action: ReduxAction) => {
+export const VotingSessionReducer = (state: VotingSessionState = defaultState, action: ReduxAction): VotingSessionState => {
   switch (action.type) {
+    case VotingSessionActionTypes.GOT_ALL:
+      return {
+        ...state,
+        sessions: {
+          ...state.sessions,
+          ...action.votingSessions,
+        },
+      };
     case VotingSessionActionTypes.GOT_LATEST:
       return {
         ...state,
-        latest: action.votingSession,
+        latestId: action.votingSession._id,
+        sessions: {
+          ...state.sessions,
+          [action.votingSession._id]: action.votingSession,
+        },
       };
     case VotingSessionActionTypes.GOT_CURRENT:
       return {
         ...state,
-        current: action.votingSession,
+        currentId: action.votingSession._id,
+        sessions: {
+          ...state.sessions,
+          [action.votingSession._id]: action.votingSession,
+        },
       };
     case VotingSessionActionTypes.GOT_CLOSE:
       return {
         ...state,
-        latest: action.votingSession,
-        current: null,
+        currentId: null,
+        latestId: action.votingSession._id,
+        sessions: {
+          ...state.sessions,
+          [action.votingSession._id]: action.votingSession,
+        },
       };
     case VotingSessionActionTypes.GOT_OPEN:
       return {
         ...state,
-        current: action.votingSession,
+        currentId: action.votingSession._id,
+        sessions: {
+          ...state.sessions,
+          [action.votingSession._id]: action.votingSession,
+        },
       };
     case VotingSessionActionTypes.GOT_VOTES_CAST:
       return {
         ...state,
-        current: action.votingSession,
+        currentId: action.votingSession._id,
+        sessions: {
+          ...state.sessions,
+          [action.votingSession._id]: action.votingSession,
+        },
       };
     case SeasonActionTypes.GOT_CURRENT:
+      const votingSession = action.current ? action.current.votingSession : undefined;
+      const id = votingSession ? votingSession._id : undefined;
+      const { [id]: oldSession, ...sessions } = state.sessions;
       return {
         ...state,
-        current: action.current ? action.current.votingSession : null,
+        currentId: id || null,
+        sessions: id ? {
+          ...sessions,
+          [id]: votingSession,
+        } : { ...sessions },
       };
     case SeasonActionTypes.GOT_OPEN:
       return {
         ...state,
-        current: action.season ? action.season.votingSession : null,
+        currentId: action.season && action.season.votingSession ? action.season.votingSession._id : null,
+        sessions: {
+          ...state.sessions,
+          [action.season && action.season.votingSession ? action.season.votingSession._id : null]: action.season.votingSession,
+        },
       };
     default:
       return state

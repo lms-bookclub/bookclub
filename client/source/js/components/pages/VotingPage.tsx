@@ -36,7 +36,9 @@ const mapStateToProps = (state: any) => {
     isLoggedIn: state.users.isLoggedIn,
     isAdmin: state.users.isAdmin,
     books: state.books,
-    votingSession: state.votingSession.current || state.votingSession.latest || {},
+    votingSession: state.votingSession.currentId ? state.votingSession.sessions[state.votingSession.currentId]
+      : state.votingSession.latestId ? state.votingSession.sessions[state.votingSession.latestId]
+        : {},
   }
 };
 

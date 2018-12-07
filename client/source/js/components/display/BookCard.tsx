@@ -49,6 +49,7 @@ export interface BookListItemProps {
   onPropose?: Function;
   onRetract?: Function;
   points?: string|number;
+  borderless?: boolean;
 }
 
 export class BookCard extends React.Component<BookListItemProps, any> {
@@ -68,9 +69,12 @@ export class BookCard extends React.Component<BookListItemProps, any> {
   }
 
   render() {
-    const { myId, isAdmin } = this.props;
+    const { myId, isAdmin, borderless } = this.props;
     const { anchorEl } = this.state;
     const book = ensureProps(this.props.book);
+    const className = classnames('c-book-card', {
+      'c-book-card--borderless': borderless,
+    });
 
     const canEdit = myId === book.suggestedBy || isAdmin;
 
@@ -84,7 +88,7 @@ export class BookCard extends React.Component<BookListItemProps, any> {
     const showActionDropdown = actions.edit || actions.delete || actions.propose || actions.retract;
 
     return (
-      <Card className='c-book-card'>
+      <Card className={className}>
         <CardMedia
           className={`c-book-card__image-media${!book.links.image ? ' no-src':''}`}
           image={book.links.image ? book.links.image : '/icons/icon-book-256.png'}

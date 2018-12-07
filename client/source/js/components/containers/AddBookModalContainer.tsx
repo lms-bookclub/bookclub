@@ -17,7 +17,7 @@ export class AddBookModalContainer_ extends React.Component<any, any> {
     return (
       <GenericModalContainer
         renderTrigger={(modal) => this.props.isLoggedIn
-          ? <Button color='primary' onClick={modal.openModal}>Add book</Button>
+          ? <Button color='primary' onClick={modal.openModal}>+ Add book</Button>
           : null}
         modalComponent={EditBookDialog}
         onSubmit={this.props.submit.bind(this)}
