@@ -1,5 +1,4 @@
 import mongoose from 'lib/mongoose';
-import { VotingSessionSchema } from './voting-session';
 
 const GoalSchema = new mongoose.Schema({
   chapter: {
