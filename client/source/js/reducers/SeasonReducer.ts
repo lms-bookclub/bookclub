@@ -26,13 +26,20 @@ export const SeasonReducer = (state: SeasonState = defaultState, action: ReduxAc
         },
       };
     case SeasonActionTypes.GOT_CURRENT:
+      const currentId = action.current ? action.current._id: undefined;
+      const previousId = action.previous ? action.previous._id: undefined;
+      const { [currentId]: currentSeason, [previousId]: previousSeason, ...seasons } = state.seasons;
+
+      if (currentId) {
+        seasons[currentId] = action.current;
+      }
+      if (previousId) {
+        seasons[previousId] = action.previous;
+      }
+
       return action.current || action.previous ? {
         ...state,
-        seasons: {
-          ...state.seasons,
-          [action.current ? action.current._id: undefined]: action.current,
-          [action.previous ? action.previous._id : undefined]: action.previous,
-        },
+        seasons: seasons,
         currentId: action.current ? action.current._id : null,
         previousId: action.previous ? action.previous._id : null,
       } : {

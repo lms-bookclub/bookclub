@@ -18,12 +18,10 @@ class CurrentPage_ extends React.Component<any, any> {
     const {
       votingSession,
       currentSeason,
-      previousSeason,
       isLoggedIn,
       isAdmin,
     } = this.props;
 
-    const displaySeason = currentSeason || previousSeason;
     const isVotingOpen = votingSession.status === VotingSessionStatus.OPEN;
 
     return (
@@ -45,11 +43,11 @@ class CurrentPage_ extends React.Component<any, any> {
             : null}
           </div>
         : null}
-        {displaySeason ?
+        {currentSeason ?
           <SeasonInfo
             books={this.props.books}
             title={currentSeason ? 'Current Season' : 'Previous Season'}
-            season={displaySeason}
+            season={currentSeason}
             votingSession={votingSession}
             onSeasonClose={this.props.closeCurrentSeason.bind(this)}
             allowJsonViewing={isLoggedIn && isAdmin}
@@ -73,7 +71,6 @@ const mapStateToProps = (state: any) => {
   return {
     isLoggedIn: state.users.isLoggedIn,
     isAdmin: state.users.isAdmin,
-    previousSeason: state.seasons.seasons[state.seasons.previousId],
     currentSeason: state.seasons.seasons[state.seasons.currentId],
     votingSession: state.votingSession.currentId ? state.votingSession.sessions[state.votingSession.currentId]
       : state.votingSession.latestId ? state.votingSession.sessions[state.votingSession.latestId]

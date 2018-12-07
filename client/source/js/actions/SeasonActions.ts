@@ -59,9 +59,10 @@ export const SeasonActions = {
   }),
   closeSeason: (season) => (dispatch) => {
     dispatch(SeasonActions.requestCloseSeason_(season));
-    SeasonClient.close()
+    return SeasonClient.close()
       .then(season_ => {
         dispatch(SeasonActions.receiveCloseSeason_(season_));
+        return season_;
       });
   },
 

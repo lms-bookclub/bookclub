@@ -56,7 +56,7 @@ class SeasonsPage_ extends React.Component<any, any> {
             votingSession={votingSession}
             onSeasonClose={this.props.closeCurrentSeason.bind(this)}
             allowJsonViewing={isLoggedIn && isAdmin}
-            allowClosing={false}
+            allowClosing={isLoggedIn && isAdmin && season && season.status === SeasonStatus.STARTED}
             startVotingOpen={false}
           />
         })}

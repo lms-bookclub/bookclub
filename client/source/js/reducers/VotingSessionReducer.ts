@@ -73,13 +73,16 @@ export const VotingSessionReducer = (state: VotingSessionState = defaultState, a
         },
       };
     case SeasonActionTypes.GOT_CURRENT:
+      const votingSession = action.current ? action.current.votingSession : undefined;
+      const id = votingSession ? votingSession._id : undefined;
+      const { [id]: oldSession, ...sessions } = state.sessions;
       return {
         ...state,
-        currentId: action.current && action.current.votingSession ? action.current.votingSession._id : null,
-        sessions: {
-          ...state.sessions,
-          [action.current && action.current.votingSession ? action.current.votingSession._id : null]: action.current.votingSession,
-        },
+        currentId: id || null,
+        sessions: id ? {
+          ...sessions,
+          [id]: votingSession,
+        } : { ...sessions },
       };
     case SeasonActionTypes.GOT_OPEN:
       return {

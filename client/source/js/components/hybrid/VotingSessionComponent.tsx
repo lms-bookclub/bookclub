@@ -65,12 +65,12 @@ class VotingSessionContainer_ extends React.Component<any, any> {
 
     this.state = {
       books: extractBookList(props),
-      dirty: false,
+      enabled: true,
     };
   }
 
   render() {
-    const { books, dirty } = this.state;
+    const { books, enabled } = this.state;
     const { votingSession, users, isAdmin } = this.props;
     const booksMap = this.props.books;
     const isOpen = this.props.votingSession.status === VotingSessionStatus.OPEN;
@@ -114,12 +114,12 @@ class VotingSessionContainer_ extends React.Component<any, any> {
             : null}
           </div>
         : null}
-        <div className='o-action-row'>
+        <div className='o-action-row c-voting-session__actions'>
           {isOpen ?
             <Button
               className='o-action'
               onClick={this.props.castVotes.bind(this)}
-              disabled={!dirty}
+              disabled={!enabled}
             >
               {hasVoted ? 'Update Vote': 'Cast Vote'}
             </Button>
@@ -156,7 +156,7 @@ class VotingSessionContainer_ extends React.Component<any, any> {
     const books = list.map(item => this.props.books[item.key]);
     this.setState({
       books,
-      dirty: true,
+      enabled: true,
     });
   }
 
@@ -174,7 +174,7 @@ class VotingSessionContainer_ extends React.Component<any, any> {
 
     this.setState({
       books,
-      dirty: true,
+      enabled: true,
     });
   }
 }
@@ -200,7 +200,7 @@ const mapDispatchToProps = (dispatch: any) => {
       }));
       dispatch(ReduxActions.onNext(VotingSessionActionTypes.GOT_VOTES_CAST, () => {
         this.setState({
-          dirty: false,
+          enabled: false,
         })
       }));
       dispatch(VotingSessionActions.castVotes(votes));

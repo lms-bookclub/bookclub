@@ -33,12 +33,12 @@ class HeaderContainer_ extends React.Component<any, any> {
         <ul className='c-header__nav-tabs'>
           <NavTab to='/'>Voting</NavTab>
           <NavTab to='/books'>Books</NavTab>
-          <NavTab to='/seasons'>Seasons</NavTab>
+          <NavTab to='/seasons'>Previous Seasons</NavTab>
         </ul>
         <div>
           {me
             ? (<div onClick={this.handleMenuOpen}>
-                {me.avatar ? <img className='c-header__avatar' src={me.avatar} /> : <span>{me.name}</span>}
+                {me.avatar ? <img className='o-avatar' src={me.avatar} /> : <span>{me.name}</span>}
               </div>
               )
             : <Button color='primary' href='/auth/google'>Sign in with Google</Button>

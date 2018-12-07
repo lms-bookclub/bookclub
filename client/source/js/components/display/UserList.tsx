@@ -2,6 +2,7 @@ import * as React from 'react';
 import classnames from 'classnames';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
+import Tooltip from '@material-ui/core/Tooltip';
 import { User } from 'types';
 
 export interface UserListProps {
@@ -21,7 +22,13 @@ export class UserList extends React.Component<UserListProps, any> {
           {label}
         </Typography>
         <Typography component='p'>
-          {voters.map(_ => _.name).join(', ')}
+          {voters.map(_ =>
+            _.avatar
+              ? <Tooltip title={_.name} placement='bottom'>
+                  <img className='o-avatar' src={_.avatar} alt={_.name} />
+                </Tooltip>
+              : <span>{_.name}</span>
+          )}
         </Typography>
       </Paper>
     );
