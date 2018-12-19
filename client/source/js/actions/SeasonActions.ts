@@ -12,6 +12,8 @@ export const SeasonActionTypes = {
   GOT_OPEN: `${PREFIX}:GOT_OPEN`,
   ASK_GOAL_CREATE: `${PREFIX}:ASK_GOAL_CREATE`,
   GOT_GOAL_CREATE: `${PREFIX}:GOT_GOAL_CREATE`,
+  ASK_UPDATE: `${PREFIX}:ASK_UPDATE`,
+  GOT_UPDATE: `${PREFIX}:GOT_UPDATE`,
 };
 
 export const SeasonActions = {
@@ -62,6 +64,23 @@ export const SeasonActions = {
     SeasonClient.close()
       .then(season_ => {
         dispatch(SeasonActions.receiveCloseSeason_(season_));
+      });
+  },
+
+  requestUpdateSeason_: (season) => ({
+    type: SeasonActionTypes.ASK_UPDATE,
+    season,
+  }),
+  receiveUpdateSeason_: (season) => ({
+    type: SeasonActionTypes.GOT_UPDATE,
+    season,
+    receivedAt: Date.now(),
+  }),
+  updateSeason: (season, patch) => (dispatch) => {
+    dispatch(SeasonActions.requestUpdateSeason_(season));
+    SeasonClient.update(season._id, patch)
+      .then(season_ => {
+        dispatch(SeasonActions.receiveUpdateSeason_(season_));
       });
   },
 

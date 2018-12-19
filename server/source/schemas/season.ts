@@ -27,6 +27,10 @@ const GoalSchema = new mongoose.Schema({
 });
 
 const SeasonSchema = new mongoose.Schema({
+  title: {
+    type: String,
+  },
+
   book: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Book',

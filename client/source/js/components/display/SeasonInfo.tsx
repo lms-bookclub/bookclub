@@ -12,6 +12,7 @@ import { ConfirmDialog } from 'components/display/ConfirmDialog';
 import { VoteResultCard } from 'components/display/VoteResultCard';
 import { toStandardString } from 'utils/dates';
 import { toJSON } from 'utils/objects';
+import TextField from '@material-ui/core/TextField/TextField';
 
 function pointsForBookFromVoting(book, votingSession) {
   if(votingSession.status !== VotingSessionStatus.COMPLETE) return;
@@ -45,8 +46,8 @@ function renderDate(label, timestamp) {
 export interface SeasonInfoProps {
   season: Season;
   votingSession: VotingSession;
-  onSeasonClose?: Function;
-  allowJsonViewing: boolean;
+  onSeasonClose: Function;
+  onSeasonRename?: Function;
   allowClosing: boolean;
   title: string;
   books?: any;
@@ -56,8 +57,10 @@ export interface SeasonInfoProps {
 export interface SeasonInfoState {
   anchorEl: HTMLElement;
   closeSeasonDialogOpen: boolean;
+  renameSeasonDialogOpen: boolean;
   showJson: boolean;
   showVotingResults: boolean;
+  seasonTitle: string;
 }
 
 function ensure(props: SeasonInfoProps): SeasonInfoProps {
@@ -80,6 +83,7 @@ function ensure(props: SeasonInfoProps): SeasonInfoProps {
 
 export class SeasonInfo extends React.Component<SeasonInfoProps, SeasonInfoState> {
   closeSeasonDialog: ConfirmDialog;
+  renameSeasonDialog: ConfirmDialog;
 
   constructor(props) {
     super(props);
@@ -87,7 +91,9 @@ export class SeasonInfo extends React.Component<SeasonInfoProps, SeasonInfoState
     this.state = {
       anchorEl: null,
       closeSeasonDialogOpen: false,
+      renameSeasonDialogOpen: false,
       showJson: false,
+      seasonTitle: props.season ? props.season.title || '' : '',
       showVotingResults: props.startVotingOpen,
     };
 
@@ -95,6 +101,8 @@ export class SeasonInfo extends React.Component<SeasonInfoProps, SeasonInfoState
     this.handleMenuOpen = this.handleMenuOpen.bind(this);
     this.handleCloseSeasonClick = this.handleCloseSeasonClick.bind(this);
     this.handleCloseSeasonConfirm = this.handleCloseSeasonConfirm.bind(this);
+    this.handleRenameSeasonClick = this.handleRenameSeasonClick.bind(this);
+    this.handleRenameSeasonConfirm = this.handleRenameSeasonConfirm.bind(this);
     this.handleDialogClose = this.handleDialogClose.bind(this);
     this.handleToggleVotingResultsClick = this.handleToggleVotingResultsClick.bind(this);
     this.showJson = this.showJson.bind(this);
@@ -102,19 +110,20 @@ export class SeasonInfo extends React.Component<SeasonInfoProps, SeasonInfoState
   }
 
   render() {
-    const { season, votingSession, allowClosing, allowJsonViewing, title } = ensure(this.props);
+    const { season, votingSession, onSeasonRename, allowClosing, title } = ensure(this.props);
     const { anchorEl, showJson, showVotingResults } = this.state;
 
     const isVotingSessionClosed = votingSession.status === VotingSessionStatus.COMPLETE;
-    const allowToggleVotingResults = isVotingSessionClosed;
-    const showMenu = allowJsonViewing || allowClosing || allowToggleVotingResults;
+    const allowToggleVotingResults = !!isVotingSessionClosed;
+    const allowRenaming = !!onSeasonRename;
+    const showMenu = allowClosing || allowToggleVotingResults || allowRenaming;
 
     return (
       <div>
         <Paper className='c-season-info' elevation={1}>
           <div className='c-season-info__header o-action-title'>
             <Typography variant='headline' component='h3'>
-              {title}
+              {season.title || title}
             </Typography>
             {showMenu ?
               <div>
@@ -133,8 +142,8 @@ export class SeasonInfo extends React.Component<SeasonInfoProps, SeasonInfoState
                   onClose={this.handleMenuClose}
                 >
                   {allowToggleVotingResults ? <MenuItem onClick={this.handleToggleVotingResultsClick}>{showVotingResults ? 'Hide Voting Results' : 'Show Voting Results'}</MenuItem> : null}
+                  {allowRenaming ? <MenuItem onClick={this.handleRenameSeasonClick}>Rename Season</MenuItem> : null}
                   {allowClosing ? <MenuItem onClick={this.handleCloseSeasonClick}>Close Season</MenuItem> : null}
-                  {allowJsonViewing ? <MenuItem onClick={showJson ? this.hideJson : this.showJson}>{showJson ? 'Hide Json' : 'Show JSON'}</MenuItem> : null}
                 </Menu>
               </div>
             : null}
@@ -149,6 +158,27 @@ export class SeasonInfo extends React.Component<SeasonInfoProps, SeasonInfoState
             confirmColor='secondary'
             onRef={(ref) => (this.closeSeasonDialog = ref)}
             onConfirm={this.handleCloseSeasonConfirm}
+            onCancel={this.handleDialogClose}
+          />
+          <ConfirmDialog
+            open={this.state.renameSeasonDialogOpen}
+            title='Rename Season'
+            content={
+              <form onSubmit={this.handleRenameSeasonConfirm}>
+                <TextField
+                  id='season-title-rename'
+                  label='Season Title'
+                  className='o-field o-field--text'
+                  value={this.state.seasonTitle}
+                  onChange={(e) => this.setState({ seasonTitle: e.target.value })}
+                  margin='normal'
+                  type='text'
+                />
+              </form>
+            }
+            confirmText='Rename Season'
+            onRef={(ref) => (this.renameSeasonDialog = ref)}
+            onConfirm={this.handleRenameSeasonConfirm}
             onCancel={this.handleDialogClose}
           />
           <div className='c-season-info__details'>
@@ -195,7 +225,11 @@ export class SeasonInfo extends React.Component<SeasonInfoProps, SeasonInfoState
   }
 
   handleMenuOpen(event) {
-    this.setState({ anchorEl: event.currentTarget, closeSeasonDialogOpen: false });
+    this.setState({
+      anchorEl: event.currentTarget,
+      closeSeasonDialogOpen: false,
+      renameSeasonDialogOpen: false,
+    });
   };
 
   handleMenuClose() {
@@ -205,12 +239,21 @@ export class SeasonInfo extends React.Component<SeasonInfoProps, SeasonInfoState
   handleDialogClose() {
     this.setState({
       closeSeasonDialogOpen: false,
+      renameSeasonDialogOpen: false,
+      seasonTitle: this.props.season ? this.props.season.title || '' : '',
     });
   }
 
   handleCloseSeasonClick() {
     this.setState({
       closeSeasonDialogOpen: true,
+      anchorEl: null,
+    });
+  }
+
+  handleRenameSeasonClick() {
+    this.setState({
+      renameSeasonDialogOpen: true,
       anchorEl: null,
     });
   }
@@ -227,6 +270,14 @@ export class SeasonInfo extends React.Component<SeasonInfoProps, SeasonInfoState
     this.props.onSeasonClose();
   }
 
+  handleRenameSeasonConfirm(e?) {
+    if(e) {
+      e.preventDefault();
+    }
+    this.props.onSeasonRename(this.state.seasonTitle);
+    this.handleDialogClose();
+  }
+
   showJson() {
     this.setState({
       showJson: true,
@@ -239,5 +290,11 @@ export class SeasonInfo extends React.Component<SeasonInfoProps, SeasonInfoState
       showJson: false,
       anchorEl: null,
     });
+  }
+
+  componentWillReceiveProps(props) {
+    this.setState({
+      seasonTitle: props.season ? props.season.title || '' : '',
+    })
   }
 }

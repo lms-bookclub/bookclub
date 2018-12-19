@@ -9,7 +9,7 @@ import { SeasonActions } from 'actions/SeasonActions';
 import { BookActions } from 'actions/BookActions';
 import { SeasonInfo } from 'components/display/SeasonInfo';
 import { VotingSessionActions } from '@client/actions/VotingSessionActions';
-import { SeasonStatus } from '@shared/types';
+import { Season, SeasonStatus } from '@shared/types';
 
 class SeasonsPage_ extends React.Component<any, any> {
   render() {
@@ -54,8 +54,8 @@ class SeasonsPage_ extends React.Component<any, any> {
             title={title}
             season={season}
             votingSession={votingSession}
-            onSeasonClose={this.props.closeCurrentSeason.bind(this)}
-            allowJsonViewing={isLoggedIn && isAdmin}
+            onSeasonRename={isLoggedIn && isAdmin && season && season.status === SeasonStatus.COMPLETE && this.props.renameSeason.bind(this, season)}
+            onSeasonClose={this.props.closeSeason.bind(this, season)}
             allowClosing={isLoggedIn && isAdmin && season && season.status === SeasonStatus.STARTED}
             startVotingOpen={false}
           />
@@ -91,8 +91,14 @@ const mapDispatchToProps = (dispatch: any) => {
       dispatch(SeasonActions.fetchSeasonList());
     },
 
-    closeCurrentSeason() {
-      dispatch(SeasonActions.closeSeason(this.props.currentSeason));
+    closeSeason(season: Season) {
+      dispatch(SeasonActions.closeSeason(season));
+    },
+
+    renameSeason(season: Season, title: string) {
+      dispatch(SeasonActions.updateSeason(season, {
+        title
+      }));
     },
 
     openNewSeason() {
