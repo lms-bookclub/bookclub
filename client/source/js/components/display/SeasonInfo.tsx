@@ -12,9 +12,6 @@ import { ConfirmDialog } from 'components/display/ConfirmDialog';
 import { VoteResultCard } from 'components/display/VoteResultCard';
 import { toStandardString } from 'utils/dates';
 import { toJSON } from 'utils/objects';
-import FormControl from '@material-ui/core/FormControl/FormControl';
-import InputLabel from '@material-ui/core/InputLabel/InputLabel';
-import Select from '@material-ui/core/Select/Select';
 import TextField from '@material-ui/core/TextField/TextField';
 
 function pointsForBookFromVoting(book, votingSession) {

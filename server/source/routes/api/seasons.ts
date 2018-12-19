@@ -47,21 +47,6 @@ routes.patch('/:_id',
     }
   },
 );
-// routes.patch('/:_id',
-//   requireAuthentication,
-//   requireAdmin,
-//   mongoLayers.patchOne(SeasonModel)
-// );
-// routes.put('/:_id',
-//   requireAuthentication,
-//   requireAdmin,
-//   mongoLayers.putOne(SeasonModel)
-// );
-// routes.delete('/:_id',
-//   requireAuthentication,
-//   requireAdmin,
-//   mongoLayers.deleteOne(SeasonModel)
-// );
 
 // =============
 // === GOALS ===
