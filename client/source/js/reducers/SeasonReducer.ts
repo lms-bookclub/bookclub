@@ -67,6 +67,14 @@ export const SeasonReducer = (state: SeasonState = defaultState, action: ReduxAc
         currentId: action.season._id,
         previousId: state.currentId,
       };
+    case SeasonActionTypes.GOT_UPDATE:
+      return {
+        ...state,
+        seasons: {
+          ...state.seasons,
+          [action.season._id]: action.season,
+        },
+      };
     case SeasonActionTypes.GOT_GOAL_CREATE:
       return {
         ...state,

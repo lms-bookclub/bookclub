@@ -50,7 +50,6 @@ class CurrentPage_ extends React.Component<any, any> {
             season={currentSeason}
             votingSession={votingSession}
             onSeasonClose={this.props.closeCurrentSeason.bind(this)}
-            allowJsonViewing={isLoggedIn && isAdmin}
             allowClosing={isLoggedIn && isAdmin && currentSeason && !isVotingOpen}
             startVotingOpen={true}
           />

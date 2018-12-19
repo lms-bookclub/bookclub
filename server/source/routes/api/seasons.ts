@@ -22,6 +22,31 @@ routes.get('/current',
 );
 routes.get('/:_id', mongoLayers.findOne(SeasonModel));
 
+routes.patch('/:_id',
+  requireAuthentication,
+  requireAdmin,
+  async (req, res) => {
+    const patch = {
+      title: req.body.title,
+    };
+    try {
+      const seasonTransaction = await SeasonModel.updateOne({ _id: req.params._id }, {
+        "$set": patch,
+      });
+
+      const season = await SeasonModel.findById({ _id: req.params._id });
+
+      res.header('Transactions', JSON.stringify({
+        season: seasonTransaction,
+      }));
+
+      res.status(200).json(season);
+    } catch(err) {
+      console.log(err);
+      res.status(500).send(err);
+    }
+  },
+);
 // routes.patch('/:_id',
 //   requireAuthentication,
 //   requireAdmin,
