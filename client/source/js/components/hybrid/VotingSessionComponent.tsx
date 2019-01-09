@@ -34,7 +34,7 @@ function sortBooks(books = {}, votes = [], me = null) {
   const myVotes = votes.filter(_ => (_.user._id || _.user) === me._id).reduce((map, vote) => {
     return {
       ...map,
-      [vote.book]: vote.points,
+      [(vote.book._id || vote.book)]: vote.points,
     }
   }, {});
   const bookList = Object.keys(books).map(id => books[id]);
