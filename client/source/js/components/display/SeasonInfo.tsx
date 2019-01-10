@@ -20,13 +20,20 @@ function pointsForBookFromVoting(book, votingSession) {
   return vote ? vote.points : 0;
 }
 
-function voteResultsList(books = {}, results = [], seasonBook = {}) {
+function voteResultsList(books = {}, votingSession: VotingSession, seasonBook = {}) {
+  const {
+    results,
+    booksVotedOn,
+  } = {
+    results: [],
+    booksVotedOn: [],
+    ...votingSession
+  };
   const winner = results[0];
-  const list = Object.keys(books)
+  const list = (booksVotedOn && booksVotedOn.length > 0 ? booksVotedOn : Object.keys(books))
+    .filter(bookId => books[bookId])
     .map(bookId => {
-      const book = books[bookId] || {
-        _id: bookId,
-      };
+      const book = books[bookId];
       const result = results.find(_ => _.book === book._id);
       book.points = result ? result.points : 0;
       return book;
@@ -211,7 +218,7 @@ export class SeasonInfo extends React.Component<SeasonInfoProps, SeasonInfoState
             : null}
           {showVotingResults && isVotingSessionClosed ?
             <div className='c-season-info__voting-results'>
-              {voteResultsList(this.props.books, votingSession.results, season.book).map((book, i) =>
+              {voteResultsList(this.props.books, votingSession, season.book).map((book, i) =>
                 <VoteResultCard
                   key={i}
                   book={book}
