@@ -1,6 +1,6 @@
 {
     "name": "bookclub-client",
-    "version": "1.1.1",
+    "version": "1.1.2",
     "scripts": {
         "start": "./start.sh",
         "build:env": "tsc ../shared/@env/*.ts",
