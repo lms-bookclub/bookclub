@@ -24,6 +24,11 @@ export const BookReducer = (state: BookState = defaultState, action: ReduxAction
         ...state,
         [action.book._id]: action.book,
       };
+    case BookActionTypes.GOT_RATE:
+      return {
+        ...state,
+        [action.book._id]: action.book,
+      };
     case BookActionTypes.GOT_DELETE:
       delete state[action.book._id];
       return {

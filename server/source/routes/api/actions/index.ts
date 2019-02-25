@@ -193,5 +193,26 @@ routes.get('/find-book-details',
   },
 );
 
+routes.patch('/rate-book',
+  requireAuthentication,
+  async (req, res) => {
+    try {
+      const bookId = req.body.book;
+      const book = await BookModel.findById({ _id: bookId });
+      const value = Math.min(5, Math.max(req.body.value, 1));
+
+      const result = await book.replaceRatingFromUser({
+        user: req.body.user,
+        value: value,
+      });
+
+      res.status(200).json(result);
+    } catch(err) {
+      console.log(err);
+      res.status(500).send(err);
+    }
+  },
+);
+
 module.exports = routes;
 export {}

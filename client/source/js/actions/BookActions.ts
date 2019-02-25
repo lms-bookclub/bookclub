@@ -1,4 +1,5 @@
 import BookClient from 'clients/BookClient';
+import { Book } from '@shared/types';
 
 export const PREFIX = `@Book`;
 export const BookActionTypes = {
@@ -8,6 +9,8 @@ export const BookActionTypes = {
   GOT_CREATE: `${PREFIX}:GOT_CREATE`,
   ASK_UPDATE: `${PREFIX}:ASK_UPDATE`,
   GOT_UPDATE: `${PREFIX}:GOT_UPDATE`,
+  ASK_RATE: `${PREFIX}:ASK_RATE`,
+  GOT_RATE: `${PREFIX}:GOT_RATE`,
   ASK_DELETE: `${PREFIX}:ASK_DELETE`,
   GOT_DELETE: `${PREFIX}:GOT_DELETE`,
 };
@@ -60,6 +63,26 @@ export const BookActions = {
     BookClient.update(book._id, book)
       .then(book_ => {
         dispatch(BookActions.receiveUpdateBook_(book_));
+      });
+  },
+  
+  requestRateBook_: (book) => ({
+    type: BookActionTypes.ASK_RATE,
+    book,
+  }),
+  receiveRateBook_: (book) => ({
+    type: BookActionTypes.GOT_RATE,
+    book,
+    receivedAt: Date.now(),
+  }),
+  rateBook: (book: Book, { value, user }: { value: number, user: string }) => (dispatch) => {
+    dispatch(BookActions.requestRateBook_(book));
+    return BookClient.rate(book._id, {
+      value,
+      user,
+    })
+      .then(book_ => {
+        dispatch(BookActions.receiveRateBook_(book_));
       });
   },
   

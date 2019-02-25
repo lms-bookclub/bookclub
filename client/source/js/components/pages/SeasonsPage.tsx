@@ -9,7 +9,7 @@ import { SeasonActions } from 'actions/SeasonActions';
 import { BookActions } from 'actions/BookActions';
 import { SeasonInfo } from 'components/display/SeasonInfo';
 import { VotingSessionActions } from '@client/actions/VotingSessionActions';
-import { Season, SeasonStatus } from '@shared/types';
+import { Book, Season, SeasonStatus } from '@shared/types';
 
 class SeasonsPage_ extends React.Component<any, any> {
   render() {
@@ -17,6 +17,7 @@ class SeasonsPage_ extends React.Component<any, any> {
       seasons,
       isLoggedIn,
       isAdmin,
+      myId,
     } = this.props;
 
     const seasonList = Object.keys(seasons)
@@ -27,7 +28,7 @@ class SeasonsPage_ extends React.Component<any, any> {
     return (
       <div className='l-current-page'>
         {seasonList.map((season, i) => {
-          if (season.book && typeof season.book === 'string') {
+          if (season.book) {
             season.book = this.props.books[season.book._id || season.book] || season.book;
           }
 
@@ -56,8 +57,10 @@ class SeasonsPage_ extends React.Component<any, any> {
             votingSession={votingSession}
             onSeasonRename={isLoggedIn && isAdmin && season && season.status === SeasonStatus.COMPLETE && this.props.renameSeason.bind(this, season)}
             onSeasonClose={this.props.closeSeason.bind(this, season)}
+            onRateBook={isLoggedIn && season && season.status === SeasonStatus.COMPLETE &&  this.props.rateBook.bind(this)}
             allowClosing={isLoggedIn && isAdmin && season && season.status === SeasonStatus.STARTED}
             startVotingOpen={false}
+            myId={myId}
           />
         })}
       </div>
@@ -73,6 +76,7 @@ const mapStateToProps = (state: any) => {
   return {
     isLoggedIn: state.users.isLoggedIn,
     isAdmin: state.users.isAdmin,
+    myId: state.users.myId,
     seasons: state.seasons.seasons,
     votingSessions: state.votingSession.sessions || {},
     currentSeason: state.seasons.seasons[state.seasons.currentId],
@@ -103,6 +107,14 @@ const mapDispatchToProps = (dispatch: any) => {
 
     openNewSeason() {
       dispatch(SeasonActions.openSeason());
+    },
+
+    rateBook({ book, value } : { book: Book, value: number }) {
+      const user = this.props.myId;
+      dispatch(BookActions.rateBook(book, {
+        value,
+        user,
+      }));
     },
   }
 };

@@ -40,6 +40,11 @@ function renderStatus(status, points = null) {
   return <span className={className}>{points ? pointString(points) : status}</span>;
 }
 
+function yourRating(ratings: any[], myId: string) {
+  const yours = ratings.find(rating => rating.user === myId);
+  return yours ? `(you gave ${yours.value})` : '';
+}
+
 export interface BookListItemProps {
   book: Book;
   isAdmin?: boolean;
@@ -125,12 +130,23 @@ export class BookCard extends React.Component<BookListItemProps, any> {
 
           <CardContent>
             {renderStatus(book.status, this.props.points)}
+            {book.status === BookStatus.FINISHED ?
+              <span className='c-book-card__detail c-book-card__detail--rating'>
+                <label>Rating: </label>
+                <span>
+                  {book.hasOwnProperty('averageRating') && book.averageRating > -1
+                    ? `${book.averageRating} average from ${book.ratings.length} ratings ${yourRating(book.ratings, myId)}`
+                    : 'No ratings yet'
+                  }
+                </span>
+              </span>
+            : null}
             {book.genre ?
               <span className='c-book-card__detail c-book-card__detail--genre'>
                 <label>Genre: </label>
                 <span>{book.genre}</span>
               </span>
-              : null}
+            : null}
             <span className='c-book-card__detail c-book-card__detail--goodreads'>
               <label>Goodreads: </label>
               <a href={book.links.goodreads ? ensureGoodreadsUrlIsValid(book.links.goodreads) : '#'} target='_blank'>{ensureGoodreadsUrlIsShort(book.links.goodreads)}</a>

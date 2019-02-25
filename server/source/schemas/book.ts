@@ -1,4 +1,5 @@
 import mongoose from 'lib/mongoose';
+import { VotingSessionSchema } from './voting-session';
 
 const BookSchema = new mongoose.Schema({
   title: {
@@ -35,6 +36,16 @@ const BookSchema = new mongoose.Schema({
     required: true,
   },
 
+  ratings: [{
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    },
+    value: {
+      type: Number,
+    }
+  }],
+
   dates: {
     created: {
       type: Date,
@@ -69,6 +80,26 @@ BookSchema.virtual('status').get(function() {
         ? 'SUGGESTED'
         : 'BACKLOG';
 });
+
+BookSchema.virtual('averageRating').get(function() {
+  return this.ratings && this.ratings.length > 0
+    ? (this.ratings.reduce((sum, rating) => sum + rating.value, 0) / this.ratings.length)
+    : -1;
+});
+
+BookSchema.methods.replaceRatingFromUser = async function({ user, value } : { user: string, value: number }) {
+  const instance = this;
+
+  instance.ratings = [
+    ...instance.ratings.filter(_ => _.user.toString() !== user),
+    {
+      user,
+      value,
+    },
+  ];
+
+  return await instance.save();
+};
 
 const BookModel = mongoose.model('Book', BookSchema);
 

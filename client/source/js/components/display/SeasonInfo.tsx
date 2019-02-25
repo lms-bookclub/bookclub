@@ -13,6 +13,22 @@ import { VoteResultCard } from 'components/display/VoteResultCard';
 import { toStandardString } from 'utils/dates';
 import { toJSON } from 'utils/objects';
 import TextField from '@material-ui/core/TextField/TextField';
+import FormControl from '@material-ui/core/FormControl';
+import FormHelperText from '@material-ui/core/FormHelperText';
+
+const RatingDescriptions = [
+  `5 - I would recommend this book to everyone - regardless of their interested in the genre. Everyone should read this book.`,
+  `4 - I would recommend this book to someone interested in the genre.`,
+  `3 - Good book to read if you have the time.`,
+  `2 - Don't recommend. It was ok.`,
+  `1 - I didn't like it, and no one should read this book.`,
+];
+
+function getUserRating(book, myId?): number {
+  if(!myId) return -1;
+  const rating = book ? book.ratings.find(rating => rating.user === myId) : null;
+  return rating ? rating.value : -1;
+}
 
 function pointsForBookFromVoting(book, votingSession) {
   if(votingSession.status !== VotingSessionStatus.COMPLETE) return;
@@ -55,19 +71,24 @@ export interface SeasonInfoProps {
   votingSession: VotingSession;
   onSeasonClose: Function;
   onSeasonRename?: Function;
+  onRateBook?: Function;
   allowClosing: boolean;
   title: string;
   books?: any;
   startVotingOpen?: boolean;
+  myId?: any;
 }
 
 export interface SeasonInfoState {
   anchorEl: HTMLElement;
   closeSeasonDialogOpen: boolean;
   renameSeasonDialogOpen: boolean;
+  rateBookDialogOpen: boolean;
   showJson: boolean;
   showVotingResults: boolean;
   seasonTitle: string;
+  userBookRating: number;
+  isRatingValid: boolean;
 }
 
 function ensure(props: SeasonInfoProps): SeasonInfoProps {
@@ -91,6 +112,7 @@ function ensure(props: SeasonInfoProps): SeasonInfoProps {
 export class SeasonInfo extends React.Component<SeasonInfoProps, SeasonInfoState> {
   closeSeasonDialog: ConfirmDialog;
   renameSeasonDialog: ConfirmDialog;
+  rateBookDialog: ConfirmDialog;
 
   constructor(props) {
     super(props);
@@ -99,9 +121,12 @@ export class SeasonInfo extends React.Component<SeasonInfoProps, SeasonInfoState
       anchorEl: null,
       closeSeasonDialogOpen: false,
       renameSeasonDialogOpen: false,
+      rateBookDialogOpen: false,
       showJson: false,
       seasonTitle: props.season ? props.season.title || '' : '',
       showVotingResults: props.startVotingOpen,
+      userBookRating: getUserRating(props.season.book, props.myId),
+      isRatingValid: true,
     };
 
     this.handleMenuClose = this.handleMenuClose.bind(this);
@@ -110,6 +135,8 @@ export class SeasonInfo extends React.Component<SeasonInfoProps, SeasonInfoState
     this.handleCloseSeasonConfirm = this.handleCloseSeasonConfirm.bind(this);
     this.handleRenameSeasonClick = this.handleRenameSeasonClick.bind(this);
     this.handleRenameSeasonConfirm = this.handleRenameSeasonConfirm.bind(this);
+    this.handleRateBookClick = this.handleRateBookClick.bind(this);
+    this.handleRateBookConfirm = this.handleRateBookConfirm.bind(this);
     this.handleDialogClose = this.handleDialogClose.bind(this);
     this.handleToggleVotingResultsClick = this.handleToggleVotingResultsClick.bind(this);
     this.showJson = this.showJson.bind(this);
@@ -121,9 +148,10 @@ export class SeasonInfo extends React.Component<SeasonInfoProps, SeasonInfoState
     const { anchorEl, showJson, showVotingResults } = this.state;
 
     const isVotingSessionClosed = votingSession.status === VotingSessionStatus.COMPLETE;
-    const allowToggleVotingResults = !!isVotingSessionClosed;
+    const allowToggleVotingResults = isVotingSessionClosed;
     const allowRenaming = !!onSeasonRename;
-    const showMenu = allowClosing || allowToggleVotingResults || allowRenaming;
+    const allowRating = isVotingSessionClosed && this.props.myId && this.props.onRateBook;
+    const showMenu = allowClosing || allowToggleVotingResults || allowRenaming || allowRating;
 
     return (
       <div>
@@ -151,6 +179,7 @@ export class SeasonInfo extends React.Component<SeasonInfoProps, SeasonInfoState
                   {allowToggleVotingResults ? <MenuItem onClick={this.handleToggleVotingResultsClick}>{showVotingResults ? 'Hide Voting Results' : 'Show Voting Results'}</MenuItem> : null}
                   {allowRenaming ? <MenuItem onClick={this.handleRenameSeasonClick}>Rename Season</MenuItem> : null}
                   {allowClosing ? <MenuItem onClick={this.handleCloseSeasonClick}>Close Season</MenuItem> : null}
+                  {allowRating ? <MenuItem onClick={this.handleRateBookClick}>Rate Book</MenuItem> : null}
                 </Menu>
               </div>
             : null}
@@ -167,6 +196,7 @@ export class SeasonInfo extends React.Component<SeasonInfoProps, SeasonInfoState
             onConfirm={this.handleCloseSeasonConfirm}
             onCancel={this.handleDialogClose}
           />
+
           <ConfirmDialog
             open={this.state.renameSeasonDialogOpen}
             title='Rename Season'
@@ -188,6 +218,46 @@ export class SeasonInfo extends React.Component<SeasonInfoProps, SeasonInfoState
             onConfirm={this.handleRenameSeasonConfirm}
             onCancel={this.handleDialogClose}
           />
+
+          <ConfirmDialog
+            open={this.state.rateBookDialogOpen}
+            title='Rate Book'
+            content={
+              <form onSubmit={this.handleRateBookConfirm} noValidate>
+                <FormControl error={!this.state.isRatingValid}>
+
+                  <TextField
+                    id='season-rate-book'
+                    label='Your Rating'
+                    className='o-field o-field--text'
+                    value={this.state.userBookRating > -1 ? this.state.userBookRating : ''}
+                    onChange={(e) => {
+                      const value = parseFloat(e.target.value);
+                      this.setState({ userBookRating: value, isRatingValid: value >= 1 && value <= 5 })}
+                    }
+                    margin='normal'
+                    type='number'
+                    inputProps={{
+                      min: 1.0,
+                      max: 5.0,
+                      step: 0.1,
+                    }}
+                  />
+
+                  <FormHelperText>{this.state.isRatingValid ? '' : 'Rating must be between 1 and 5'}</FormHelperText>
+
+                  {RatingDescriptions.map((description, i) =>
+                    <DialogContentText className='c-season-info__rating-description' key={i}>{description}</DialogContentText>
+                  )}
+                </FormControl>
+              </form>
+            }
+            confirmText='Rate Book'
+            onRef={(ref) => (this.rateBookDialog = ref)}
+            onConfirm={this.handleRateBookConfirm}
+            onCancel={this.handleDialogClose}
+          />
+
           <div className='c-season-info__details'>
             {season.dates.created ?
               renderDate('Started', season.dates.created)
@@ -236,6 +306,7 @@ export class SeasonInfo extends React.Component<SeasonInfoProps, SeasonInfoState
       anchorEl: event.currentTarget,
       closeSeasonDialogOpen: false,
       renameSeasonDialogOpen: false,
+      rateBookDialogOpen: false,
     });
   };
 
@@ -247,6 +318,7 @@ export class SeasonInfo extends React.Component<SeasonInfoProps, SeasonInfoState
     this.setState({
       closeSeasonDialogOpen: false,
       renameSeasonDialogOpen: false,
+      rateBookDialogOpen: false,
       seasonTitle: this.props.season ? this.props.season.title || '' : '',
     });
   }
@@ -265,6 +337,15 @@ export class SeasonInfo extends React.Component<SeasonInfoProps, SeasonInfoState
     });
   }
 
+  handleRateBookClick() {
+    this.setState({
+      userBookRating: getUserRating(this.props.season.book, this.props.myId),
+      isRatingValid: true,
+      rateBookDialogOpen: true,
+      anchorEl: null,
+    });
+  }
+
   handleToggleVotingResultsClick() {
     this.setState({
       showVotingResults: !this.state.showVotingResults,
@@ -275,6 +356,20 @@ export class SeasonInfo extends React.Component<SeasonInfoProps, SeasonInfoState
   handleCloseSeasonConfirm() {
     this.handleDialogClose();
     this.props.onSeasonClose();
+  }
+
+  handleRateBookConfirm(e) {
+    if(e) {
+      e.preventDefault();
+    }
+    if(this.state.isRatingValid) {
+      const { userBookRating } = this.state;
+      this.handleDialogClose();
+      this.props.onRateBook({
+        book: this.props.season.book,
+        value: userBookRating,
+      });
+    }
   }
 
   handleRenameSeasonConfirm(e?) {
