@@ -46,6 +46,10 @@ function yourRating(ratings: any[], myId: string) {
   return yours ? `(you gave ${yours.value})` : '';
 }
 
+function formatRating(rating) {
+  return Math.trunc(roundToNearest(rating, 0.1) * 10) / 10;
+}
+
 export interface BookListItemProps {
   book: Book;
   isAdmin?: boolean;
@@ -136,7 +140,7 @@ export class BookCard extends React.Component<BookListItemProps, any> {
                 <label>Rating: </label>
                 <span>
                   {book.hasOwnProperty('averageRating') && book.averageRating > -1
-                    ? `${roundToNearest(book.averageRating, 0.1)} average from ${book.ratings.length} ratings ${yourRating(book.ratings, myId)}`
+                    ? `${formatRating(book.averageRating)} average from ${book.ratings.length} ratings ${yourRating(book.ratings, myId)}`
                     : 'No ratings yet'
                   }
                 </span>
