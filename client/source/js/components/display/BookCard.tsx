@@ -9,6 +9,7 @@ import IconButton from '@material-ui/core/IconButton';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 import classnames from 'classnames';
 import { Book, BookStatus } from 'types';
+import { roundToNearest } from '@shared/utils/math';
 import { ensureGoodreadsUrlIsShort, ensureGoodreadsUrlIsValid } from 'utils/goodreads';
 import { normalize, pointString } from 'utils/strings';
 
@@ -135,7 +136,7 @@ export class BookCard extends React.Component<BookListItemProps, any> {
                 <label>Rating: </label>
                 <span>
                   {book.hasOwnProperty('averageRating') && book.averageRating > -1
-                    ? `${book.averageRating} average from ${book.ratings.length} ratings ${yourRating(book.ratings, myId)}`
+                    ? `${roundToNearest(book.averageRating, 0.5)} average from ${book.ratings.length} ratings ${yourRating(book.ratings, myId)}`
                     : 'No ratings yet'
                   }
                 </span>
