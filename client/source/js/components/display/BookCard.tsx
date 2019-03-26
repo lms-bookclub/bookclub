@@ -136,7 +136,7 @@ export class BookCard extends React.Component<BookListItemProps, any> {
                 <label>Rating: </label>
                 <span>
                   {book.hasOwnProperty('averageRating') && book.averageRating > -1
-                    ? `${roundToNearest(book.averageRating, 0.5)} average from ${book.ratings.length} ratings ${yourRating(book.ratings, myId)}`
+                    ? `${roundToNearest(book.averageRating, 0.1)} average from ${book.ratings.length} ratings ${yourRating(book.ratings, myId)}`
                     : 'No ratings yet'
                   }
                 </span>
