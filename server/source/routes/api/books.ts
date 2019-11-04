@@ -5,6 +5,9 @@ import { BookModel } from 'schemas/book';
 const routes = express.Router();
 
 routes.get('/', mongoLayers.findAll(BookModel));
+// routes.get('/', (req, res, next) => {
+//   setTimeout(() => next(), 1000);
+// }, mongoLayers.findAll(BookModel));
 routes.get('/:_id', mongoLayers.findOne(BookModel));
 routes.post('/',
   setReqDate('created'),

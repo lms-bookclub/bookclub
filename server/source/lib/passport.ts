@@ -20,6 +20,7 @@ export default function initPassport(server) {
       clientID: Config.GOOGLE_AUTH_CLIENT_ID,
       clientSecret: Config.GOOGLE_AUTH_CLIENT_SECRET,
       callbackURL: Config.GOOGLE_AUTH_CALLBACK_PATH,
+      userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo",
     },
     async function(accessToken, refreshToken, profile, done) {
       try {
