@@ -5,7 +5,6 @@ import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import { withRouter } from 'react-router';
 import Button from '@material-ui/core/Button';
-import Config from 'config';
 import { BookStatus, VotingSessionStatus } from 'types';
 import { ReorderableList } from 'lib/reorderable-lists';
 import { VotingSessionActions, VotingSessionActionTypes } from 'actions/VotingSessionActions';
@@ -16,7 +15,6 @@ import { CloseAcceptanceVotingDialogButton } from 'components/display/CloseAccep
 import { UserList } from 'components/display/UserList';
 
 const rankValueFor = (i, books: any[]) => {
-  console.log('pragma:books', books);
   const divider = books.findIndex(book => book && book.isDivider === true);
   return i < divider
     ? i
