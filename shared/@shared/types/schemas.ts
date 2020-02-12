@@ -9,7 +9,8 @@ export type VotingSession = {
   status: string;
   results: {
     book: string,
-    points: string|number,
+    points?: string|number,
+    rankings?: number[],
   }[];
   booksVotedOn: (string|Book)[];
 }

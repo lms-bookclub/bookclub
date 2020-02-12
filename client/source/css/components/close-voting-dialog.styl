@@ -2,18 +2,27 @@
   &__result-list
     display block
     margin-top 5px
+    padding-left 24px
 
   &__result
-    display block
+    display list-item
     font-size 1rem
     font-weight 400
     font-family 'Roboto', 'Helvetica', 'Arial', sans-serif
-    color rgba(#000, .54)
-    margin-bottom 3px
+    color #000
+    list-style-type decimal
+    padding-left 1em
+    margin-bottom .25em
+    line-height 1.4
 
   &__result-points
     display inline-block
+    color rgba(#000, .54)
 
   &__result-book
     display inline-block
     margin-left 10px
+
+  &--acceptance .c-close-voting-dialog__result-book
+    margin-left 0
+    display block

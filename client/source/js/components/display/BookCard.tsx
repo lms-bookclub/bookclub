@@ -11,7 +11,7 @@ import classnames from 'classnames';
 import { Book, BookStatus } from 'types';
 import { roundToNearest } from '@shared/utils/math';
 import { ensureGoodreadsUrlIsShort, ensureGoodreadsUrlIsValid } from 'utils/goodreads';
-import { normalize, pointString } from 'utils/strings';
+import { acceptanceVoteResultsString, normalize, pointString } from 'utils/strings';
 
 const ensureProps = (book) => ({
   meta: {},
@@ -30,7 +30,7 @@ const ensureProps = (book) => ({
   } : (book.suggestedBy || ''),
 });
 
-function renderStatus(status, points = null) {
+function renderStatus(status, points = null, votes = null) {
   if(status === BookStatus.BACKLOG) return null;
 
   const className = classnames({
@@ -38,7 +38,11 @@ function renderStatus(status, points = null) {
     [`c-book-card__status--${normalize(status)}`]: !!status,
     'has-points': points,
   });
-  return <span className={className}>{points ? pointString(points) : status}</span>;
+  if (votes) {
+    return <span className={className}>{acceptanceVoteResultsString(votes)}</span>;
+  } else {
+    return <span className={className}>{points ? pointString(points) : status}</span>;
+  }
 }
 
 function yourRating(ratings: any[], myId: string) {
@@ -59,6 +63,7 @@ export interface BookListItemProps {
   onPropose?: Function;
   onRetract?: Function;
   points?: string|number;
+  rankings?: number[];
   borderless?: boolean;
 }
 
@@ -134,7 +139,7 @@ export class BookCard extends React.Component<BookListItemProps, any> {
           : null}
 
           <CardContent>
-            {renderStatus(book.status, this.props.points)}
+            {renderStatus(book.status, this.props.points, this.props.rankings)}
             {book.status === BookStatus.FINISHED ?
               <span className='c-book-card__detail c-book-card__detail--rating'>
                 <label>Rating: </label>

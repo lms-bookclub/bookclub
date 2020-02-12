@@ -22,6 +22,10 @@ routes.post('/start-new-season',
   async (req, res) => {
     try {
       const now = req.body.dates.created;
+      const votingSessionBody = Object.assign({}, req.body.votingSession || {});
+      if (req.body.votingSession) {
+        delete req.body.votingSession;
+      }
       const entry = await SeasonModel.create(req.body);
 
       await VotingSessionModel.update({
@@ -35,6 +39,7 @@ routes.post('/start-new-season',
       });
 
       entry.votingSession = await VotingSessionModel.create({
+        ...votingSessionBody,
         'dates.created': now,
         'dates.started': now,
       });

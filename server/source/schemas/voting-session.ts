@@ -9,7 +9,7 @@ import mongoose from 'lib/mongoose';
  * @param votes
  * @param user
  */
-function areVotesValid(votes, user) {
+function areVotesValidForWeighted(votes, user) {
   if(votes.length !== 3) {
     return false;
   }
@@ -35,6 +35,22 @@ function areVotesValid(votes, user) {
   });
 }
 
+function areVotesValidForAcceptance(votes, user) {
+  const slots = {};
+
+  return votes.every(vote => {
+    // Already exists
+    if (vote.rank < 0) {
+      return true;
+    } else if (slots[vote.rank] || vote.rank >= votes.length) {
+      return false;
+    } else {
+      slots[vote.rank] = vote;
+      return true;
+    }
+  });
+}
+
 /**
  * Total the votes given a list of votes. Excepts the 'book' field in the param to be a string.
  *
@@ -48,7 +64,7 @@ function areVotesValid(votes, user) {
  *  points: number,
  * }[]}
  */
-function calculateResults(votes: { user: string, book: string, points: number }[] = []): { book: string, points: number }[] {
+function calculateResultsForWeighted(votes: { user: string, book: string, points: number }[] = []): { book: string, points: number }[] {
   const votesByBook = votes.reduce((votes, vote) => {
     return {
       ...votes,
@@ -62,7 +78,61 @@ function calculateResults(votes: { user: string, book: string, points: number }[
     .sort((a, b) => b.points - a.points);
 }
 
+function calculateResultsForAcceptance(votes: { user: string, book: string, rank: number }[] = []): { book: string, rankings: number[] }[] {
+  const votesByBook = votes.reduce((votes, vote) => {
+    const existing = votes[vote.book] || [];
+    return {
+      ...votes,
+      [vote.book]: [...existing, vote.rank >= 0 ? vote.rank : undefined],
+    }
+  }, {});
+
+  return Object
+    .keys(votesByBook)
+    .map(book => ({
+      book,
+      rankings: votesByBook[book]
+        .filter(rank => rank !== undefined)
+        .sort((a, b) => a - b)
+    }))
+    .sort((a, b) => {
+      const diff = b.rankings.length - a.rankings.length;
+      if (diff > 0) {
+        return 1;
+      }
+      if (diff < 0) {
+        return -1;
+      }
+
+      const maxRank = Math.max(
+        a.rankings[a.rankings.length - 1],
+        b.rankings[b.rankings.length - 1],
+      );
+
+      for(let rank = 0; rank <= maxRank; rank++) {
+        const aVotesAtRank = a.rankings.filter(vote => vote === rank).length;
+        const bVotesAtRank = b.rankings.filter(vote => vote === rank).length;
+        const votesAtRankDiff = bVotesAtRank - aVotesAtRank;
+
+        if (votesAtRankDiff > 0) {
+          return 1;
+        }
+        if (votesAtRankDiff < 0) {
+          return -1;
+        }
+      }
+
+      return 0;
+    });
+}
+
 const VotingSessionSchema = new mongoose.Schema({
+  system: {
+    type: String,
+    enum: ['WEIGHTED_3X', 'ACCEPTANCE_WITH_RANKED_TIEBREAKER'],
+    default: 'WEIGHTED_3X',
+  },
+
   booksVotedOn: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Book',
@@ -81,7 +151,9 @@ const VotingSessionSchema = new mongoose.Schema({
     },
     points: {
       type: Number,
-      required: true,
+    },
+    rank: {
+      type: Number,
     },
   }],
 
@@ -116,7 +188,9 @@ VotingSessionSchema.virtual('status').get(function() {
 });
 
 VotingSessionSchema.virtual('results').get(function() {
-  return calculateResults(this.votes);
+  return this.system === 'ACCEPTANCE_WITH_RANKED_TIEBREAKER'
+    ? calculateResultsForAcceptance(this.votes)
+    : calculateResultsForWeighted(this.votes);
 });
 
 VotingSessionSchema.statics.getCurrentSession = function() {
@@ -142,7 +216,9 @@ VotingSessionSchema.statics.getCurrentSession = function() {
 VotingSessionSchema.methods.replaceVotesFromUser = async function(userId, votes) {
   const instance = this;
 
-  const isValid = areVotesValid(votes, userId);
+  const isValid = this.system === 'ACCEPTANCE_WITH_RANKED_TIEBREAKER'
+    ? areVotesValidForAcceptance(votes, userId)
+    : areVotesValidForWeighted(votes, userId);
 
   if (!isValid) {
     throw 'Cannot replace votes - new votes invalid.';
