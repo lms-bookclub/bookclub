@@ -46,5 +46,8 @@ export function acceptanceVoteResultsString(votes: (string|number)[] = []): stri
   //   .map(rank => `${ranks[rank]}x ${rankString(rank)}`)
   //   .join(', ');
 
-  return `${votes.length} ${votes.length === 1 ? 'vote' : 'votes'} (${votes.map(rankString).join(', ')})`;
+  const voteCount = `${votes.length} ${votes.length === 1 ? 'vote' : 'votes'}`;
+  const votesList = `(${votes.map(rankString).join(', ')})`;
+
+  return `${voteCount}${votes.length > 0 ? ` ${votesList}`: ''}`;
 }
