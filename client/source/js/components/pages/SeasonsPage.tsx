@@ -7,7 +7,8 @@ import { withRouter } from 'react-router';
 import { timeOf, toStandardString } from '@client/utils/dates';
 import { SeasonActions } from 'actions/SeasonActions';
 import { BookActions } from 'actions/BookActions';
-import { SeasonInfo } from 'components/display/SeasonInfo';
+import { SeasonInfoAcceptance } from 'components/display/SeasonInfoAcceptance';
+import { SeasonInfoWeighted } from 'components/display/SeasonInfoWeighted';
 import { VotingSessionActions } from '@client/actions/VotingSessionActions';
 import { Book, Season, SeasonStatus } from '@shared/types';
 
@@ -48,6 +49,10 @@ class SeasonsPage_ extends React.Component<any, any> {
               }
             }, {})
             : this.props.books;
+
+          const SeasonInfo = votingSession.system === 'ACCEPTANCE_WITH_RANKED_TIEBREAKER'
+            ? SeasonInfoAcceptance
+            : SeasonInfoWeighted;
 
           return <SeasonInfo
             key={i}

@@ -16,7 +16,7 @@ function setBookProp(props) {
   return (props.results && props.results[0] && props.results[0].book && props.results[0].book._id) || '';
 }
 
-export interface CloseVotingDialogButtonProps {
+export interface CloseWeightedVotingDialogButtonProps {
   onRef?: Function;
   onConfirm: Function;
   books: { [key:string]: Book };
@@ -24,7 +24,7 @@ export interface CloseVotingDialogButtonProps {
   results: any[];
 }
 
-export class CloseVotingDialogButton extends React.Component<CloseVotingDialogButtonProps, any> {
+export class CloseWeightedVotingDialogButton extends React.Component<CloseWeightedVotingDialogButtonProps, any> {
   dialog: ConfirmDialogButton;
 
   state = {

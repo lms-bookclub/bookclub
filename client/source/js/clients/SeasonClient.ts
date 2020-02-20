@@ -7,6 +7,11 @@ class SeasonClient extends BaseResourceClient {
     return fetch_(`${Config.API_HOST}/api/actions/start-new-season`, {
       method: 'POST',
       shouldAcceptStatus: _ => _ === 201,
+      data: {
+        votingSession: {
+          system: 'ACCEPTANCE_WITH_RANKED_TIEBREAKER',
+        },
+      },
     });
   }
 

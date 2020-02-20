@@ -22,12 +22,12 @@ export class UserList extends React.Component<UserListProps, any> {
           {label}
         </Typography>
         <Typography component='p'>
-          {voters.map(_ =>
+          {voters.map((_, i) =>
             _.avatar
-              ? <Tooltip title={_.name} placement='bottom'>
+              ? <Tooltip title={_.name} placement='bottom' key={i}>
                   <img className='o-avatar' src={_.avatar} alt={_.name} />
                 </Tooltip>
-              : <span>{_.name}</span>
+              : <span key={i}>{_.name}</span>
           )}
         </Typography>
       </Paper>
