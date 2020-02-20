@@ -10,7 +10,7 @@ import mongoose from 'lib/mongoose';
  * @param user
  */
 function areVotesValidForWeighted(votes, user) {
-  if(votes.length !== 3) {
+  if(votes.length > 3) {
     return false;
   }
 

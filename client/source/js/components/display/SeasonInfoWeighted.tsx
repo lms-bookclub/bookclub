@@ -54,7 +54,7 @@ function voteResultsList(books = {}, votingSession: VotingSession, seasonBook = 
       book.points = result ? result.points : 0;
       return book;
     })
-    .filter(_ => _._id !== winner.book && _.status !== BookStatus.BACKLOG && _._id)
+    .filter(_ => _._id !== winner.book && (booksVotedOn.length > 0 || _.status !== BookStatus.BACKLOG) && _._id)
     .sort((a, b) => b.points - a.points);
   return list;
 }
