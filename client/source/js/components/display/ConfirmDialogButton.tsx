@@ -21,6 +21,7 @@ export interface ConfirmDialogButtonProps {
   onRef?: Function;
   closeOnConfirm?: boolean;
   closeOnCancel?: boolean;
+  isConfirmDisabled?: boolean;
 }
 
 export class ConfirmDialogButton extends React.Component<ConfirmDialogButtonProps, any> {
@@ -68,9 +69,11 @@ export class ConfirmDialogButton extends React.Component<ConfirmDialogButtonProp
       cancelText,
       content,
       title,
+      isConfirmDisabled,
     } = {
       confirmText: 'Confirm',
       cancelText: 'Cancel',
+      isConfirmDisabled: false,
       ...this.props
     };
 
@@ -92,7 +95,7 @@ export class ConfirmDialogButton extends React.Component<ConfirmDialogButtonProp
             {content}
           </DialogContent>
           <DialogActions>
-            <Button onClick={this.handleCancel} color={cancelColor}>
+            <Button onClick={this.handleCancel} color={cancelColor} disabled={isConfirmDisabled}>
               {cancelText}
             </Button>
             <Button onClick={this.handleConfirm} color={confirmColor} autoFocus>

@@ -78,6 +78,7 @@ export class CloseAcceptanceVotingDialogButton extends React.Component<CloseAcce
         onCancel={this.closeDialog.bind(this)}
         color='secondary'
         closeOnConfirm={false}
+        isConfirmDisabled={!book}
       >
         Close Voting
       </ConfirmDialogButton>

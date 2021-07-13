@@ -121,6 +121,17 @@ routes.post('/close-current-voting-session',
   requireAuthentication,
   requireAdmin,
   setReqDate('finished'),
+  async (req, res, next) => {
+    const bookID = req.body.book;
+
+    const book = await BookModel.findOne({ _id: bookID });
+
+    if(book) {
+      next();
+    } else {
+      res.status(403).send(`Cannot close voting session with invalid book ID ${bookID}.`);
+    }
+  },
   async (req, res) => {
     const bookId = req.body.book;
     const now = req.body.dates.finished;
