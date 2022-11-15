@@ -9,12 +9,12 @@ import MoreVertIcon from '@material-ui/icons/MoreVert';
 import { BookStatus, Season, VotingSession, VotingSessionStatus } from 'types';
 import { BookCard } from 'components/display/BookCard';
 import { ConfirmDialog } from 'components/display/ConfirmDialog';
-import { VoteResultCardAcceptance } from 'components/display/VoteResultCardAcceptance';
 import { toStandardString } from 'utils/dates';
 import { toJSON } from 'utils/objects';
 import TextField from '@material-ui/core/TextField/TextField';
 import FormControl from '@material-ui/core/FormControl';
 import FormHelperText from '@material-ui/core/FormHelperText';
+import { VoteResultCardAdvancedAcceptance } from '@client/components/display/VoteResultCardAdvancedAcceptance';
 
 const RatingDescriptions = [
   `5 - I would recommend this book to everyone - regardless of their interested in the genre. Everyone should read this book.`,
@@ -52,38 +52,41 @@ function voteResultsList(books = {}, votingSession: VotingSession, seasonBook = 
       const book = books[bookId];
       const result = results.find(_ => _.book === book._id);
       book.rankings = result ? result.rankings : [];
+      book.method = result ? result.method : null;
+      book.tiedCount = result ? result.tiedCount : 1;
       return book;
     })
     .filter(_ => _._id !== winner.book && (booksVotedOn.length > 0 || _.status !== BookStatus.BACKLOG) && _._id)
-    .sort((a, b) => {
-      const diff = b.rankings.length - a.rankings.length;
-      if (diff > 0) {
-        return 1;
-      }
-      if (diff < 0) {
-        return -1;
-      }
-
-      const maxRank = Math.max(
-        a.rankings[a.rankings.length - 1],
-        b.rankings[b.rankings.length - 1],
-      );
-
-      for(let rank = 0; rank <= maxRank; rank++) {
-        const aVotesAtRank = a.rankings.filter(vote => vote === rank).length;
-        const bVotesAtRank = b.rankings.filter(vote => vote === rank).length;
-        const votesAtRankDiff = bVotesAtRank - aVotesAtRank;
-
-        if (votesAtRankDiff > 0) {
-          return 1;
-        }
-        if (votesAtRankDiff < 0) {
-          return -1;
-        }
-      }
-
-      return 0;
-    });
+  ;
+    // .sort((a, b) => {
+    //   const diff = b.rankings.length - a.rankings.length;
+    //   if (diff > 0) {
+    //     return 1;
+    //   }
+    //   if (diff < 0) {
+    //     return -1;
+    //   }
+    //
+    //   const maxRank = Math.max(
+    //     a.rankings[a.rankings.length - 1],
+    //     b.rankings[b.rankings.length - 1],
+    //   );
+    //
+    //   for(let rank = 0; rank <= maxRank; rank++) {
+    //     const aVotesAtRank = a.rankings.filter(vote => vote === rank).length;
+    //     const bVotesAtRank = b.rankings.filter(vote => vote === rank).length;
+    //     const votesAtRankDiff = bVotesAtRank - aVotesAtRank;
+    //
+    //     if (votesAtRankDiff > 0) {
+    //       return 1;
+    //     }
+    //     if (votesAtRankDiff < 0) {
+    //       return -1;
+    //     }
+    //   }
+    //
+    //   return 0;
+    // });
   return list;
 }
 
@@ -94,7 +97,7 @@ function renderDate(label, timestamp) {
   </Typography>
 }
 
-export interface SeasonInfoAcceptanceProps {
+export interface SeasonInfoAdvancedAcceptanceProps {
   season: Season;
   votingSession: VotingSession;
   onSeasonClose: Function;
@@ -107,7 +110,7 @@ export interface SeasonInfoAcceptanceProps {
   myId?: any;
 }
 
-export interface SeasonInfoAcceptanceState {
+export interface SeasonInfoAdvancedAcceptanceState {
   anchorEl: HTMLElement;
   closeSeasonDialogOpen: boolean;
   renameSeasonDialogOpen: boolean;
@@ -119,7 +122,7 @@ export interface SeasonInfoAcceptanceState {
   isRatingValid: boolean;
 }
 
-function ensure(props: SeasonInfoAcceptanceProps): SeasonInfoAcceptanceProps {
+function ensure(props: SeasonInfoAdvancedAcceptanceProps): SeasonInfoAdvancedAcceptanceProps {
   return {
     season: {
       dates: {
@@ -137,7 +140,7 @@ function ensure(props: SeasonInfoAcceptanceProps): SeasonInfoAcceptanceProps {
   }
 }
 
-export class SeasonInfoAcceptance extends React.Component<SeasonInfoAcceptanceProps, SeasonInfoAcceptanceState> {
+export class SeasonInfoAdvancedAcceptance extends React.Component<SeasonInfoAdvancedAcceptanceProps, SeasonInfoAdvancedAcceptanceState> {
   closeSeasonDialog: ConfirmDialog;
   renameSeasonDialog: ConfirmDialog;
   rateBookDialog: ConfirmDialog;
@@ -317,7 +320,7 @@ export class SeasonInfoAcceptance extends React.Component<SeasonInfoAcceptancePr
           {showVotingResults && isVotingSessionClosed ?
             <div className='c-season-info__voting-results'>
               {voteResultsList(this.props.books, votingSession, season.book).map((book, i) =>
-                <VoteResultCardAcceptance
+                <VoteResultCardAdvancedAcceptance
                   key={i}
                   book={book}
                 />

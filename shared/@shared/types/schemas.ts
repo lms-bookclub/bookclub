@@ -2,6 +2,14 @@ export type User = any;
 export type Book = any;
 export type Season = any;
 export type Vote = any;
+
+export enum AdvancedAcceptanceMethod {
+  BASIC_ACCEPTANCE = 'BASIC_ACCEPTANCE',
+  INSTANT_RUNOFF = 'INSTANT_RUNOFF',
+  MOST_PRIORITY = 'MOST_PRIORITY',
+  TIED = 'TIED',
+}
+
 export type VotingSession = {
   _id: string;
   votes: Vote[];
@@ -11,6 +19,8 @@ export type VotingSession = {
     book: string,
     points?: string|number,
     rankings?: number[],
+    method?: AdvancedAcceptanceMethod,
+    tiedCount?: number,
   }[];
   booksVotedOn: (string|Book)[];
 }

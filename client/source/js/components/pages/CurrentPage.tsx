@@ -11,6 +11,7 @@ import { ConfirmDialogButton } from 'components/display/ConfirmDialogButton';
 import { VotingSessionContainer } from 'components/hybrid/VotingSessionComponent';
 import { SeasonInfoAcceptance } from 'components/display/SeasonInfoAcceptance';
 import { SeasonInfoWeighted } from 'components/display/SeasonInfoWeighted';
+import { SeasonInfoAdvancedAcceptance } from '@client/components/display/SeasonInfoAdvancedAcceptance';
 
 class CurrentPage_ extends React.Component<any, any> {
   openSeasonDialog: ConfirmDialogButton;
@@ -25,9 +26,11 @@ class CurrentPage_ extends React.Component<any, any> {
 
     const isVotingOpen = votingSession.status === VotingSessionStatus.OPEN;
 
-    const SeasonInfo = votingSession.system === 'ACCEPTANCE_WITH_RANKED_TIEBREAKER'
-      ? SeasonInfoAcceptance
-      : SeasonInfoWeighted;
+    const SeasonInfo = {
+      ['ACCEPTANCE_WITH_RANKED_TIEBREAKER']: SeasonInfoAcceptance,
+      ['ADVANCED_ACCEPTANCE']: SeasonInfoAdvancedAcceptance,
+      ['WEIGHTED_3X']: SeasonInfoWeighted,
+    }[votingSession.system];
 
     return (
       <div className='l-current-page'>

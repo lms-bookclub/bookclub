@@ -1,11 +1,11 @@
 import * as React from 'react';
-import { Router, Route, Switch, browserHistory } from 'react-router';
-import { syncHistoryWithStore } from 'react-router-redux';
 import { connect } from 'react-redux';
-import { push } from 'react-router-redux';
 import { withRouter } from 'react-router';
 import { VotingSessionAcceptanceContainer } from 'components/hybrid/VotingSessionAcceptanceComponent';
 import { VotingSessionWeightedContainer } from 'components/hybrid/VotingSessionWeightedComponent';
+import {
+  VotingSessionAdvancedAcceptanceContainer
+} from '@client/components/hybrid/VotingSessionAdvancedAcceptanceComponent';
 
 class VotingSessionContainer_ extends React.Component<any, any> {
   render() {
@@ -13,8 +13,11 @@ class VotingSessionContainer_ extends React.Component<any, any> {
 
     const system = votingSession.system || 'WEIGHTED_3X';
 
-    const VotingSession = system === 'ACCEPTANCE_WITH_RANKED_TIEBREAKER'
-      ? VotingSessionAcceptanceContainer : VotingSessionWeightedContainer;
+    const VotingSession = {
+      ['ACCEPTANCE_WITH_RANKED_TIEBREAKER']: VotingSessionAcceptanceContainer,
+      ['ADVANCED_ACCEPTANCE']: VotingSessionAdvancedAcceptanceContainer,
+      ['WEIGHTED_3X']: VotingSessionWeightedContainer,
+    }[system];
 
     return (
       <React.Fragment>
