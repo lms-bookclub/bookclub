@@ -4,11 +4,11 @@ import CardMedia from '@material-ui/core/CardMedia';
 import { Book } from 'types';
 import { acceptanceVoteResultsString } from 'utils/strings';
 
-export interface VoteResultCardProps {
+export interface VoteResultCardAdvancedAcceptanceProps {
   book: Book;
 }
 
-export class VoteResultCardAcceptance extends React.Component<VoteResultCardProps, any> {
+export class VoteResultCardAdvancedAcceptance extends React.Component<VoteResultCardAdvancedAcceptanceProps, any> {
   render() {
     const { book } = this.props;
 
@@ -22,6 +22,7 @@ export class VoteResultCardAcceptance extends React.Component<VoteResultCardProp
         <div className='c-vote-card__padded'>
           <div className='c-vote-card__details'>
             <span className='c-vote-card__title'>{book.title}</span> <span className='c-vote-card__dash'>-</span> <span className='c-vote-card__author'>{book.author || '??'}</span>
+            <span>{book.method} {book.tiedCount}</span>
           </div>
           <div className='c-vote-card__points'>
             <span className='c-vote-card__points-text'>{acceptanceVoteResultsString(book.rankings)}</span>

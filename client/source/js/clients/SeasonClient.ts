@@ -9,7 +9,7 @@ class SeasonClient extends BaseResourceClient {
       shouldAcceptStatus: _ => _ === 201,
       data: {
         votingSession: {
-          system: 'ACCEPTANCE_WITH_RANKED_TIEBREAKER',
+          system: 'ADVANCED_ACCEPTANCE',
         },
       },
     });

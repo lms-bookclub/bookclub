@@ -3,7 +3,7 @@
         "sourceMap": true,
         "noImplicitAny": false,
         "esModuleInterop": true,
-        "target": "es2019",
+        "target": "esnext",
         "module": "commonjs",
         "outDir": "./dist/",
         "baseUrl": "./source",

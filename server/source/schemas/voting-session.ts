@@ -1,4 +1,5 @@
 import mongoose from 'lib/mongoose';
+import { AdvancedAcceptanceMethod } from '@shared/types';
 
 /**
  * Must contain 3 votes.
@@ -141,7 +142,7 @@ type RankingFunction = (rawVotes: string[][], booksForRanking: Set<string>) => S
 /**
  * Convenience alias to use in the forEach method. Behaves the same as the javascript Array.prototype.forEach
  */
-type RankConsumerFunction = (result: { book: string, method: string }, index: number, booksForRanking: { book: string, method: string }[]) => void;
+type RankConsumerFunction = (result: { book: string, method: AdvancedAcceptanceMethod }, index: number, booksForRanking: { book: string, method: AdvancedAcceptanceMethod }[]) => void;
 
 abstract class Ranker {
   protected readonly _rawVotes: string[][];
@@ -152,7 +153,7 @@ abstract class Ranker {
     this._booksForRanking = booksForRanking;
   }
 
-  abstract filterWinners(rankingFunction: RankingFunction, rankingMethod: string): Ranker;
+  abstract filterWinners(rankingFunction: RankingFunction, rankingMethod: AdvancedAcceptanceMethod): Ranker;
 
   abstract getRankingMethod(): string;
 
@@ -164,7 +165,7 @@ abstract class Ranker {
   }
 
   static of(rawVotes: string[][], booksForRanking: Set<string>): Ranker {
-    return booksForRanking.size > 1 ? new TiedRanker(rawVotes, booksForRanking) : new CompletedRanker(rawVotes, booksForRanking, 'Default');
+    return booksForRanking.size > 1 ? new TiedRanker(rawVotes, booksForRanking) : new CompletedRanker(rawVotes, booksForRanking, null);
   }
 };
 
@@ -179,14 +180,14 @@ class TiedRanker extends Ranker {
     super(rawVotes, booksForRanking);
   }
 
-  filterWinners(rankingFunction: RankingFunction, rankingMethod: string): Ranker {
+  filterWinners(rankingFunction: RankingFunction, rankingMethod: AdvancedAcceptanceMethod): Ranker {
     const result = rankingFunction(this._rawVotes, this._booksForRanking);
 
     return result.size > 1 ? new TiedRanker(this._rawVotes, result) : new CompletedRanker(this._rawVotes, result, rankingMethod);
   }
 
-  getRankingMethod(): string {
-    return 'Tied';
+  getRankingMethod(): AdvancedAcceptanceMethod {
+    return AdvancedAcceptanceMethod.TIED;
   }
 }
 
@@ -194,9 +195,9 @@ class TiedRanker extends Ranker {
  * Implementation of Ranker when there is a clear book winner, do not construct this class directly, use Ranker.of
  */
 class CompletedRanker extends Ranker {
-  private readonly _rankingMethod: string;
+  private readonly _rankingMethod: AdvancedAcceptanceMethod;
 
-  constructor(rawVotes: string[][], booksForRanking: Set<string>, rankingMethod: string) {
+  constructor(rawVotes: string[][], booksForRanking: Set<string>, rankingMethod: AdvancedAcceptanceMethod) {
     if (booksForRanking.size > 1) {
       throw new Error('Too many books for a CompletedRanker')
     }
@@ -205,16 +206,16 @@ class CompletedRanker extends Ranker {
     this._rankingMethod = rankingMethod;
   }
 
-  filterWinners(_rankingFunction: RankingFunction, _rankingMethod: string): Ranker {
+  filterWinners(_rankingFunction: RankingFunction, _rankingMethod: AdvancedAcceptanceMethod): Ranker {
     return this;
   }
 
-  getRankingMethod(): string {
+  getRankingMethod(): AdvancedAcceptanceMethod {
     return this._rankingMethod;
   }
 }
 
-function calculateResultsForAcceptanceWithInstantRunoff(votes: { user: string, book: string, rank: number }[] = []): { book: string, rankings: number[], method: string }[] {
+function calculateResultsForAcceptanceWithInstantRunoff(votes: { user: string, book: string, rank: number }[] = []): { book: string, rankings: number[], method: AdvancedAcceptanceMethod, tiedCount: number }[] {
   const votesPerUser = votes
     .reduce(
       (groupedVotes, { user, book, rank }) => {
@@ -232,13 +233,13 @@ function calculateResultsForAcceptanceWithInstantRunoff(votes: { user: string, b
         .map(({ book }) => book));
 
   // Each voting system is allowed to return a Tie for winners. If there is a tie, the next voting system in the list will attempt to break the tie
-  const votingSystems: [RankingFunction, string][] = [
-    [acceptanceVote, 'Acceptance Vote'],
-    [instantRunoffVote, 'Instant Runoff Vote'], // commenting this out would make the method the same as calculateResultsForAcceptance
-    [highestOriginalChoiceVote, 'Highest Original Choice Vote'],
+  const votingSystems: [RankingFunction, AdvancedAcceptanceMethod][] = [
+    [acceptanceVote, AdvancedAcceptanceMethod.BASIC_ACCEPTANCE],
+    [instantRunoffVote, AdvancedAcceptanceMethod.INSTANT_RUNOFF], // commenting this out would make the method the same as calculateResultsForAcceptance
+    [highestOriginalChoiceVote, AdvancedAcceptanceMethod.MOST_PRIORITY],
   ];
 
-  let booksForRanking = votes
+  const booksForRanking = votes
     .map(({ book }) => book)
     .reduce((books, book) => books.add(book), new Set<string>());
 
@@ -251,13 +252,13 @@ function calculateResultsForAcceptanceWithInstantRunoff(votes: { user: string, b
         return books.set(book, bookRanks);
       },
       Array.from(booksForRanking)
-        .reduce((books, book) => books.set(book, []), new Map<string, number[]>)
+        .reduce((books, book) => books.set(book, []), new Map<string, number[]>())
     ))
     .map(([book, rankings]) => [book, rankings.sort((a, b) => a - b)] as [string, number[]])
-    .reduce((books, [book, rankings]: [string, number[]]) => books.set(book, rankings), new Map<string, number[]>);
+    .reduce((books, [book, rankings]: [string, number[]]) => books.set(book, rankings), new Map<string, number[]>());
 
   // find the winner(s) for each cohort, remove them, then run the vote tally again to find the next best book, repeat until no books remain
-  let results = new Array<{ book: string, rankings: number[], method: string }>();
+  const results = [];
 
   while (booksForRanking.size > 0) {
     votingSystems
@@ -265,9 +266,13 @@ function calculateResultsForAcceptanceWithInstantRunoff(votes: { user: string, b
         (ranker, system) => ranker.filterWinners(...system),
         Ranker.of(rawVotes, booksForRanking))
       .forEach(({ book, method }, _index, books) => {
-        const finalMethod = method === 'Tied' ? `${method} ${books.length} ways` : method;
         booksForRanking.delete(book);
-        results.push({ book: book, rankings: bookToRankings.get(book)!, method: finalMethod })
+        results.push({
+          book: book,
+          rankings: bookToRankings.get(book)!,
+          method,
+          tiedCount: books.length,
+        });
       });
   }
 
@@ -280,12 +285,12 @@ function acceptanceVote(rawVotes: string[][], booksForRanking: Set<string>): Set
     .filter((book) => booksForRanking.has(book))
     .reduce(
       (books, book) => books.set(book, books.get(book)! + 1),
-      Array.from(booksForRanking).reduce((books, book) => books.set(book, 0), new Map<string, number>));
+      Array.from(booksForRanking).reduce((books, book) => books.set(book, 0), new Map<string, number>()));
 
   const ranked_books = Array.from(bookVoteCount)
     .reduce(
       (ranks, [book, count]) => ranks.set(count, (ranks.get(count) || new Set<string>()).add(book)),
-      new Map<number, Set<string>>);
+      new Map<number, Set<string>>());
 
   return Array.from(ranked_books)
     .sort(([count1, _books1], [count2, _books2]) => count2 - count1)
@@ -301,7 +306,7 @@ function instantRunoffVote(rawVotes: string[][] = [], booksForRanking: Set<strin
     .map(votes => votes[0]) // We already filtered out empty lists
     .reduce(
       (books, book) => books.set(book, books.get(book)! + 1),
-      Array.from(booksForRanking).reduce((books, book) => books.set(book, 0), new Map<string, number>));
+      Array.from(booksForRanking).reduce((books, book) => books.set(book, 0), new Map<string, number>()));
 
   const totalVotes = Array.from(bookResults.values())
     .reduce((sum, count) => sum + count, 0);
@@ -339,7 +344,7 @@ function highestOriginalChoiceVote(rawVotes: string[][], booksForRanking: Set<st
         const book = books.get(bookRank.book)!;
         return books.set(bookRank.book, book.set(bookRank.rank, (book.get(bookRank.rank) || 0) + 1));
       },
-      Array.from(booksForRanking).reduce((books, book) => books.set(book, new Map<number, number>()), new Map<string, Map<number, number>>));
+      Array.from(booksForRanking).reduce((books, book) => books.set(book, new Map<number, number>()), new Map<string, Map<number, number>>()));
 
   const maxRank = Array.from(booksToVoteCounts.values()).flatMap((voteCounts) => Array.from(voteCounts.keys()))
     .reduce((max, current) => current > max ? current : max, 0);
@@ -372,7 +377,11 @@ function highestOriginalChoiceVote(rawVotes: string[][], booksForRanking: Set<st
 const VotingSessionSchema = new mongoose.Schema({
   system: {
     type: String,
-    enum: ['WEIGHTED_3X', 'ACCEPTANCE_WITH_RANKED_TIEBREAKER'],
+    enum: [
+      'WEIGHTED_3X',
+      'ACCEPTANCE_WITH_RANKED_TIEBREAKER',
+      'ADVANCED_ACCEPTANCE',
+    ],
     default: 'WEIGHTED_3X',
   },
 
@@ -434,9 +443,11 @@ VotingSessionSchema.virtual('status').get(function () {
 });
 
 VotingSessionSchema.virtual('results').get(function () {
-  return this.system === 'ACCEPTANCE_WITH_RANKED_TIEBREAKER'
-    ? calculateResultsForAcceptance(this.votes)
-    : calculateResultsForWeighted(this.votes);
+  return {
+    ['ADVANCED_ACCEPTANCE']: calculateResultsForAcceptanceWithInstantRunoff(this.votes),
+    ['ACCEPTANCE_WITH_RANKED_TIEBREAKER']: calculateResultsForAcceptance(this.votes),
+    ['WEIGHTED_3X']: calculateResultsForWeighted(this.votes),
+  }[this.system];
 });
 
 VotingSessionSchema.statics.getCurrentSession = function () {
@@ -462,9 +473,11 @@ VotingSessionSchema.statics.getCurrentSession = function () {
 VotingSessionSchema.methods.replaceVotesFromUser = async function (userId, votes) {
   const instance = this;
 
-  const isValid = this.system === 'ACCEPTANCE_WITH_RANKED_TIEBREAKER'
-    ? areVotesValidForAcceptance(votes, userId)
-    : areVotesValidForWeighted(votes, userId);
+  const isValid = {
+    ['ADVANCED_ACCEPTANCE']: areVotesValidForAcceptance(votes, userId),
+    ['ACCEPTANCE_WITH_RANKED_TIEBREAKER']: areVotesValidForAcceptance(votes, userId),
+    ['WEIGHTED_3X']: areVotesValidForWeighted(votes, userId),
+  }[this.system];
 
   if (!isValid) {
     throw 'Cannot replace votes - new votes invalid.';

@@ -11,6 +11,7 @@ import { SeasonInfoAcceptance } from 'components/display/SeasonInfoAcceptance';
 import { SeasonInfoWeighted } from 'components/display/SeasonInfoWeighted';
 import { VotingSessionActions } from '@client/actions/VotingSessionActions';
 import { Book, Season, SeasonStatus } from '@shared/types';
+import { SeasonInfoAdvancedAcceptance } from '@client/components/display/SeasonInfoAdvancedAcceptance';
 
 class SeasonsPage_ extends React.Component<any, any> {
   render() {
@@ -50,9 +51,11 @@ class SeasonsPage_ extends React.Component<any, any> {
             }, {})
             : this.props.books;
 
-          const SeasonInfo = votingSession.system === 'ACCEPTANCE_WITH_RANKED_TIEBREAKER'
-            ? SeasonInfoAcceptance
-            : SeasonInfoWeighted;
+          const SeasonInfo = {
+            ['ACCEPTANCE_WITH_RANKED_TIEBREAKER']: SeasonInfoAcceptance,
+            ['ADVANCED_ACCEPTANCE']: SeasonInfoAdvancedAcceptance,
+            ['WEIGHTED_3X']: SeasonInfoWeighted,
+          }[votingSession.system];
 
           return <SeasonInfo
             key={i}
