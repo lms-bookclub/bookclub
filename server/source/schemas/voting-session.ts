@@ -155,7 +155,7 @@ abstract class Ranker {
 
   abstract filterWinners(rankingFunction: RankingFunction, rankingMethod: AdvancedAcceptanceMethod): Ranker;
 
-  abstract getRankingMethod(): string;
+  abstract getRankingMethod(): AdvancedAcceptanceMethod;
 
   forEach(mapperFunction: RankConsumerFunction): Ranker {
     Array.from(this._booksForRanking)
@@ -165,7 +165,7 @@ abstract class Ranker {
   }
 
   static of(rawVotes: string[][], booksForRanking: Set<string>): Ranker {
-    return booksForRanking.size > 1 ? new TiedRanker(rawVotes, booksForRanking) : new CompletedRanker(rawVotes, booksForRanking, null);
+    return booksForRanking.size > 1 ? new TiedRanker(rawVotes, booksForRanking) : new CompletedRanker(rawVotes, booksForRanking, AdvancedAcceptanceMethod.DEFAULT);
   }
 };
 
@@ -215,8 +215,13 @@ class CompletedRanker extends Ranker {
   }
 }
 
-function calculateResultsForAcceptanceWithInstantRunoff(votes: { user: string, book: string, rank: number }[] = []): { book: string, rankings: number[], method: AdvancedAcceptanceMethod, tiedCount: number }[] {
-  const votesPerUser = votes
+function calculateResultsForAcceptanceWithInstantRunoff(votes: { user: string | { _id: string }, book: string | { _id: string }, rank: number }[] = []): { book: string, rankings: number[], method: AdvancedAcceptanceMethod, tiedCount: number }[] {
+  const normalizedVotes = votes.map(({ user, book, rank }) => {
+    const normalizedUser = typeof user === "string" ? user : user._id;
+    const normalizedBook = typeof book === "string" ? book : book._id;
+    return { user: normalizedUser, book: normalizedBook, rank: rank };
+  });
+  const votesPerUser = normalizedVotes
     .reduce(
       (groupedVotes, { user, book, rank }) => {
         let votesForUser = groupedVotes.get(user) || new Array<{ book: string, rank: number }>();
@@ -239,11 +244,11 @@ function calculateResultsForAcceptanceWithInstantRunoff(votes: { user: string, b
     [highestOriginalChoiceVote, AdvancedAcceptanceMethod.MOST_PRIORITY],
   ];
 
-  const booksForRanking = votes
+  const booksForRanking = normalizedVotes
     .map(({ book }) => book)
     .reduce((books, book) => books.add(book), new Set<string>());
 
-  const bookToRankings = Array.from(votes
+  const bookToRankings = Array.from(normalizedVotes
     .map(({ book: book, rank: rank }) => { return { book: book, rank: rank } })
     .reduce(
       (books, { book, rank }) => {
@@ -258,7 +263,7 @@ function calculateResultsForAcceptanceWithInstantRunoff(votes: { user: string, b
     .reduce((books, [book, rankings]: [string, number[]]) => books.set(book, rankings), new Map<string, number[]>());
 
   // find the winner(s) for each cohort, remove them, then run the vote tally again to find the next best book, repeat until no books remain
-  const results = [];
+  const results: { book: string; rankings: number[]; method: AdvancedAcceptanceMethod; tiedCount: number; }[] = [];
 
   while (booksForRanking.size > 0) {
     votingSystems
@@ -406,10 +411,7 @@ const VotingSessionSchema = new mongoose.Schema({
     },
     rank: {
       type: Number,
-    },
-    method: {
-      type: String,
-    },
+    }
   }],
 
   dates: {
