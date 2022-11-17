@@ -215,23 +215,29 @@ class CompletedRanker extends Ranker {
   }
 }
 
-function calculateResultsForAcceptanceWithInstantRunoff(votes: { user: string | { _id: string }, book: string | { _id: string }, rank: number }[] = []): { book: string, rankings: number[], method: AdvancedAcceptanceMethod, tiedCount: number }[] {
-  const normalizedVotes = votes.map(({ user, book, rank }) => {
-    const normalizedUser = typeof user === "string" ? user : user._id;
-    const normalizedBook = typeof book === "string" ? book : book._id;
-    return { user: normalizedUser, book: normalizedBook, rank: rank };
+function calculateResultsForAcceptanceWithInstantRunoff(mongooseVotes: { user: object, book: object, rank: number }[] = []): { book: string, rankings: number[], method: AdvancedAcceptanceMethod, tiedCount: number }[] {
+  const votes = mongooseVotes.map((vote) => {
+    return {
+      book: vote.book.toString(),
+      user: vote.user.toString(),
+      rank: vote.rank,
+    }
   });
-  const votesPerUser = normalizedVotes
-    .reduce(
-      (groupedVotes, { user, book, rank }) => {
-        let votesForUser = groupedVotes.get(user) || new Array<{ book: string, rank: number }>();
-        votesForUser.push({ book: book, rank: rank });
-        return groupedVotes.set(user, votesForUser);
-      },
-      new Map<string, { book: string, rank: number }[]>())
-    .values();
 
-  const rawVotes = Array.from(votesPerUser)
+  const groupedOrderedBooks: { book: string, rank: number }[][] =
+    Array.from(
+      votes
+        .reduce(
+          (groupedVotes, { user, book, rank }) => {
+            let votesForUser = groupedVotes.get(user) || new Array<{ book: string, rank: number }>();
+            votesForUser.push({ book: book, rank: rank });
+            return groupedVotes.set(user, votesForUser);
+          },
+          new Map<string, { book: string, rank: number }[]>())
+        .values()
+    );
+
+  const rawVotes = groupedOrderedBooks
     .map(votes =>
       votes
         .sort(({ rank: rank1 }, { rank: rank2 }) => rank1 - rank2)
@@ -244,11 +250,11 @@ function calculateResultsForAcceptanceWithInstantRunoff(votes: { user: string | 
     [highestOriginalChoiceVote, AdvancedAcceptanceMethod.MOST_PRIORITY],
   ];
 
-  const booksForRanking = normalizedVotes
+  const booksForRanking = votes
     .map(({ book }) => book)
     .reduce((books, book) => books.add(book), new Set<string>());
 
-  const bookToRankings = Array.from(normalizedVotes
+  const bookToRankings = Array.from(votes
     .map(({ book: book, rank: rank }) => { return { book: book, rank: rank } })
     .reduce(
       (books, { book, rank }) => {
@@ -411,7 +417,7 @@ const VotingSessionSchema = new mongoose.Schema({
     },
     rank: {
       type: Number,
-    }
+    },
   }],
 
   dates: {
