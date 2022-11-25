@@ -30,7 +30,7 @@ class CurrentPage_ extends React.Component<any, any> {
       ['ACCEPTANCE_WITH_RANKED_TIEBREAKER']: SeasonInfoAcceptance,
       ['ADVANCED_ACCEPTANCE']: SeasonInfoAdvancedAcceptance,
       ['WEIGHTED_3X']: SeasonInfoWeighted,
-    }[votingSession.system];
+    }[votingSession.system] || SeasonInfoWeighted;
 
     return (
       <div className='l-current-page'>

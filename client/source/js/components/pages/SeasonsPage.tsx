@@ -55,7 +55,7 @@ class SeasonsPage_ extends React.Component<any, any> {
             ['ACCEPTANCE_WITH_RANKED_TIEBREAKER']: SeasonInfoAcceptance,
             ['ADVANCED_ACCEPTANCE']: SeasonInfoAdvancedAcceptance,
             ['WEIGHTED_3X']: SeasonInfoWeighted,
-          }[votingSession.system];
+          }[votingSession.system] || SeasonInfoWeighted;
 
           return <SeasonInfo
             key={i}

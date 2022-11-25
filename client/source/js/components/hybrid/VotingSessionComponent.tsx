@@ -17,7 +17,7 @@ class VotingSessionContainer_ extends React.Component<any, any> {
       ['ACCEPTANCE_WITH_RANKED_TIEBREAKER']: VotingSessionAcceptanceContainer,
       ['ADVANCED_ACCEPTANCE']: VotingSessionAdvancedAcceptanceContainer,
       ['WEIGHTED_3X']: VotingSessionWeightedContainer,
-    }[system];
+    }[system] || VotingSessionWeightedContainer;
 
     return (
       <React.Fragment>
